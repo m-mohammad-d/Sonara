@@ -1,0 +1,163 @@
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Play,
+  ListPlus,
+  Heart,
+  Folder,
+  Trash2,
+  FolderPlus,
+  Sparkles,
+} from 'lucide-react';
+import { useUIStore } from '../../stores/uiStore';
+import { usePlayerStore } from '../../stores/playerStore';
+import { usePlaylistStore } from '../../stores/playlistStore';
+
+export const ContextMenu: React.FC = () => {
+  const { contextMenu, closeContextMenu } = useUIStore();
+  const { playTrack, playNext, addToQueue } = usePlayerStore();
+  const { playlists, toggleFavorite, isFavorite, addTracksToPlaylist, deletePlaylist } = usePlaylistStore();
+  const [showPlaylistsSubmenu, setShowPlaylistsSubmenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        closeContextMenu();
+      }
+    };
+
+    window.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('wheel', closeContextMenu);
+    return () => {
+      window.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('wheel', closeContextMenu);
+    };
+  }, [closeContextMenu]);
+
+  if (!contextMenu) return null;
+
+  const { x, y, track, playlistId } = contextMenu;
+  const favorited = track ? isFavorite(track.id) : false;
+  const playlistList = Object.values(playlists);
+
+  // Position clamping
+  const menuWidth = 200;
+  const menuHeight = 260;
+  const clampedX = Math.min(x, window.innerWidth - menuWidth - 10);
+  const clampedY = Math.min(y, window.innerHeight - menuHeight - 10);
+
+  return (
+    <div
+      ref={menuRef}
+      style={{ left: `${clampedX}px`, top: `${clampedY}px` }}
+      className="fixed z-50 w-52 rounded-xl glass-panel shadow-2xl p-1.5 border border-white/10 text-xs text-slate-200 animate-in fade-in zoom-in-95 duration-100 flex flex-col gap-0.5"
+    >
+      {track && (
+        <>
+          <button
+            onClick={() => {
+              playTrack(track);
+              closeContextMenu();
+            }}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-indigo-600 hover:text-white transition w-full text-left"
+          >
+            <Play className="w-3.5 h-3.5 text-indigo-400 group-hover:text-white" />
+            <span>Play</span>
+          </button>
+
+          <button
+            onClick={() => {
+              playNext(track);
+              closeContextMenu();
+            }}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/10 transition w-full text-left"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-slate-400" />
+            <span>Play Next</span>
+          </button>
+
+          <button
+            onClick={() => {
+              addToQueue(track);
+              closeContextMenu();
+            }}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/10 transition w-full text-left"
+          >
+            <ListPlus className="w-3.5 h-3.5 text-slate-400" />
+            <span>Add to Queue</span>
+          </button>
+
+          <div className="relative" onMouseEnter={() => setShowPlaylistsSubmenu(true)} onMouseLeave={() => setShowPlaylistsSubmenu(false)}>
+            <button
+              className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/10 transition w-full text-left"
+            >
+              <div className="flex items-center gap-2.5">
+                <FolderPlus className="w-3.5 h-3.5 text-slate-400" />
+                <span>Add to Playlist</span>
+              </div>
+              <span className="text-[10px] text-slate-500">▶</span>
+            </button>
+
+            {showPlaylistsSubmenu && playlistList.length > 0 && (
+              <div className="absolute left-full top-0 ml-1 w-44 rounded-xl glass-panel shadow-2xl p-1 border border-white/10 flex flex-col gap-0.5">
+                {playlistList.map((pl) => (
+                  <button
+                    key={pl.id}
+                    onClick={() => {
+                      addTracksToPlaylist(pl.id, [track.id]);
+                      closeContextMenu();
+                    }}
+                    className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-left truncate text-slate-300 hover:text-white transition"
+                  >
+                    {pl.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => {
+              toggleFavorite(track.id);
+              closeContextMenu();
+            }}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/10 transition w-full text-left"
+          >
+            <Heart
+              className={`w-3.5 h-3.5 ${
+                favorited ? 'text-red-400 fill-red-400' : 'text-slate-400'
+              }`}
+            />
+            <span>{favorited ? 'Remove from Favorites' : 'Add to Favorites'}</span>
+          </button>
+
+          <div className="my-1 border-t border-white/5" />
+
+          <button
+            onClick={() => {
+              window.electronAPI.showItemInFolder(track.path);
+              closeContextMenu();
+            }}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/10 transition w-full text-left"
+          >
+            <Folder className="w-3.5 h-3.5 text-slate-400" />
+            <span>Show in Folder</span>
+          </button>
+        </>
+      )}
+
+      {playlistId && (
+        <button
+          onClick={() => {
+            deletePlaylist(playlistId);
+            closeContextMenu();
+          }}
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 transition w-full text-left"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          <span>Delete Playlist</span>
+        </button>
+      )}
+    </div>
+  );
+};
