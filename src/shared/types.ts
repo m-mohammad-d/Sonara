@@ -68,12 +68,13 @@ export interface EqualizerSettings {
   preamp: number; // -12dB to +12dB
 }
 
-export type ThemeName = 'dark' | 'midnight' | 'oled';
-export type VisualizerMode = 'spectrum' | 'waveform' | 'bars' | 'circular';
-export type RepeatMode = 'off' | 'all' | 'one';
+export type ThemeName = "dark" | "midnight" | "oled";
+export type VisualizerMode = "spectrum" | "waveform" | "bars" | "circular";
+export type RepeatMode = "off" | "all" | "one";
 
 export interface UserSettings {
   folders: string[];
+  notificationsEnabled: boolean;
   volume: number;
   isMuted: boolean;
   repeatMode: RepeatMode;

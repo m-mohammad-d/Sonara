@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import type { Track } from '../../shared/types';
-import { AudioEngine } from '../audio/engine';
-import { useSettingsStore } from './settingsStore';
+import { create } from "zustand";
+import type { Track } from "../../shared/types";
+import { AudioEngine } from "../audio/engine";
+import { useSettingsStore } from "./settingsStore";
 
 interface PlayerState {
   currentTrack: Track | null;
@@ -32,18 +32,19 @@ interface PlayerState {
 
 export const usePlayerStore = create<PlayerState>((set, get) => {
   const engine = AudioEngine.getInstance();
+
   let hasRecordedPlay = false;
 
-  const advanceTrack = async (direction: 'next' | 'prev') => {
+  const advanceTrack = async (direction: "next" | "prev") => {
     const { queue, queueIndex } = get();
     const { repeatMode } = useSettingsStore.getState();
 
     if (queue.length === 0) return;
 
-    let nextIndex = direction === 'next' ? queueIndex + 1 : queueIndex - 1;
+    let nextIndex = direction === "next" ? queueIndex + 1 : queueIndex - 1;
 
     if (nextIndex >= queue.length) {
-      if (repeatMode === 'all') {
+      if (repeatMode === "all") {
         nextIndex = 0;
       } else {
         // End of queue in repeat 'off'
@@ -52,7 +53,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
         return;
       }
     } else if (nextIndex < 0) {
-      nextIndex = repeatMode === 'all' ? queue.length - 1 : 0;
+      nextIndex = repeatMode === "all" ? queue.length - 1 : 0;
     }
 
     const nextTrack = queue[nextIndex];
@@ -94,10 +95,10 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
           const { repeatMode } = useSettingsStore.getState();
           const { currentTrack } = get();
 
-          if (repeatMode === 'one' && currentTrack) {
+          if (repeatMode === "one" && currentTrack) {
             await engine.play(currentTrack.path, 0);
           } else {
-            await advanceTrack('next');
+            await advanceTrack("next");
           }
         },
 
@@ -159,6 +160,12 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
 
       await engine.play(track.path, 0);
 
+      // Show now playing notification
+      const { notificationsEnabled } = useSettingsStore.getState();
+
+      if (notificationsEnabled) {
+        await window.electronAPI.showNotification(track.title, track.artist);
+      }
       // Persist last played track
       window.electronAPI.saveSettings({
         lastTrackId: track.id,
@@ -186,7 +193,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     },
 
     nextTrack: async () => {
-      await advanceTrack('next');
+      await advanceTrack("next");
     },
 
     prevTrack: async () => {
@@ -196,7 +203,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
         set({ currentTime: 0 });
         return;
       }
-      await advanceTrack('prev');
+      await advanceTrack("prev");
     },
 
     seek: (seconds: number) => {
@@ -239,7 +246,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
 
     reorderQueue: (fromIndex: number, toIndex: number) => {
       const { queue, queueIndex } = get();
-      if (fromIndex < 0 || fromIndex >= queue.length || toIndex < 0 || toIndex >= queue.length) return;
+      if (
+        fromIndex < 0 ||
+        fromIndex >= queue.length ||
+        toIndex < 0 ||
+        toIndex >= queue.length
+      )
+        return;
 
       const newQueue = [...queue];
       const [moved] = newQueue.splice(fromIndex, 1);

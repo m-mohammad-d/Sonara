@@ -1,10 +1,16 @@
-import { create } from 'zustand';
-import type { UserSettings, ThemeName, VisualizerMode, RepeatMode } from '../../shared/types';
-import { AudioEngine } from '../audio/engine';
-import { EQ_PRESETS } from '../audio/presets';
+import { create } from "zustand";
+import type {
+  UserSettings,
+  ThemeName,
+  VisualizerMode,
+  RepeatMode,
+} from "../../shared/types";
+import { AudioEngine } from "../audio/engine";
+import { EQ_PRESETS } from "../audio/presets";
 
 interface SettingsState extends UserSettings {
   isLoaded: boolean;
+  notificationsEnabled: boolean;
   initSettings: () => Promise<void>;
   setVolume: (volume: number) => void;
   toggleMute: () => void;
@@ -18,20 +24,22 @@ interface SettingsState extends UserSettings {
   toggleEqualizer: (enabled: boolean) => void;
   setEqualizerPreamp: (preamp: number) => void;
   saveFolders: (folders: string[]) => void;
+  toggleNotifications: (enabled: boolean) => void;
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
   folders: [],
+  notificationsEnabled: true,
   volume: 0.8,
   isMuted: false,
-  repeatMode: 'off',
+  repeatMode: "off",
   shuffle: false,
   playbackRate: 1,
-  theme: 'dark',
-  visualizerMode: 'spectrum',
+  theme: "dark",
+  visualizerMode: "spectrum",
   equalizer: {
     enabled: true,
-    preset: 'Flat',
+    preset: "Flat",
     bands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     preamp: 0,
   },
@@ -56,7 +64,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       engine.setBands(merged.equalizer.bands, merged.equalizer.enabled);
       engine.setPreamp(merged.equalizer.preamp);
     } catch (err) {
-      console.error('Failed to init settings:', err);
+      console.error("Failed to init settings:", err);
       set({ isLoaded: true });
     }
   },
@@ -104,7 +112,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ visualizerMode });
     window.electronAPI.saveSettings({ visualizerMode });
   },
-
+  toggleNotifications: (enabled: boolean) => {
+    set({ notificationsEnabled: enabled });
+    window.electronAPI.saveSettings({
+      notificationsEnabled: enabled,
+    });
+  },
   setEqualizerPreset: (presetName: string) => {
     const preset = EQ_PRESETS[presetName];
     if (!preset) return;
@@ -124,7 +137,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     currentBands[index] = Math.max(-12, Math.min(12, value));
     const newEq = {
       ...get().equalizer,
-      preset: 'Custom',
+      preset: "Custom",
       bands: currentBands,
     };
     set({ equalizer: newEq });
