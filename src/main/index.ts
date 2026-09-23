@@ -5,6 +5,7 @@ import { registerMediaSchemePrivilege, setupMediaProtocol } from './protocol';
 import { AppStore } from './store';
 import { LibraryScanner } from './scanner';
 import { registerIpcHandlers } from './ipc';
+import { createAppTray, destroyAppTray, getAppIcon } from './tray';
 
 // Register custom media scheme privilege before app is ready
 registerMediaSchemePrivilege();
@@ -13,6 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let mainWindow: BrowserWindow | null = null;
 let store: AppStore | null = null;
 let scanner: LibraryScanner | null = null;
+let isQuitting = false;
 
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
 
@@ -20,10 +22,16 @@ if (!gotSingleInstanceLock) {
   app.quit();
 } else {
   app.on('second-instance', () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
+    showMainWindow();
+  });
+
+  app.on('before-quit', () => {
+    isQuitting = true;
+    destroyAppTray();
+  });
+
+  app.on('will-quit', () => {
+    destroyAppTray();
   });
 
   app.whenReady().then(async () => {
@@ -34,24 +42,50 @@ if (!gotSingleInstanceLock) {
 
     createMainWindow();
 
+    createAppTray({
+      onShow: () => {
+        showMainWindow();
+      },
+      onQuit: () => {
+        isQuitting = true;
+        app.quit();
+      },
+    });
+
     registerIpcHandlers(store, scanner, () => mainWindow);
 
     app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        createMainWindow();
-      }
+      showMainWindow();
     });
   });
 
   app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+    if (isQuitting) {
       app.quit();
     }
   });
 }
 
+function showMainWindow(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    createMainWindow();
+    return;
+  }
+
+  if (!mainWindow.isVisible()) {
+    mainWindow.show();
+  }
+
+  if (mainWindow.isMinimized()) {
+    mainWindow.restore();
+  }
+
+  mainWindow.focus();
+}
+
 function createMainWindow(): void {
   const preloadPath = path.join(__dirname, '../preload/index.js');
+  const appIcon = getAppIcon();
 
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -61,6 +95,7 @@ function createMainWindow(): void {
     frame: false,
     titleBarStyle: 'hidden',
     backgroundColor: '#0d0f17',
+    icon: appIcon,
     show: false,
     webPreferences: {
       preload: preloadPath,
@@ -68,7 +103,20 @@ function createMainWindow(): void {
       nodeIntegration: false,
       sandbox: false,
       webSecurity: true,
+      backgroundThrottling: false,
     },
+  });
+
+  // Intercept window close button to hide to tray instead of quitting
+  mainWindow.on('close', (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      mainWindow?.hide();
+    }
+  });
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
   });
 
   // Smooth window appearance once content is painted
@@ -82,3 +130,4 @@ function createMainWindow(): void {
     mainWindow.loadFile(path.join(__dirname, '../../dist/index.html'));
   }
 }
+
