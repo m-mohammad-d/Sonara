@@ -15,7 +15,6 @@
   "keywords": [
     "music-player",
     "electron",
-    "react",
     "typescript",
     "audio"
   ],
@@ -50,19 +49,39 @@
   },
   "build": {
     "appId": "com.sonora.player",
-    "productName": "Sonora Music Player",
+    "productName": "Sonora",
+    "artifactName": "${productName}-${version}-${arch}.${ext}",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "files": [
       "dist/**",
       "dist-electron/**",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "public/icon.png",
+        "to": "icon.png"
+      }
+    ],
+    "asar": true,
     "win": {
+      "icon": "public/icon.png",
       "target": [
-        "nsis",
-        "portable"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "nsis": {
@@ -70,10 +89,11 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "artifactName": "${productName} Setup ${version}.${ext}"
+      "shortcutName": "Sonora",
+      "artifactName": "Sonora Setup ${version}.${ext}"
     },
     "portable": {
-      "artifactName": "${productName} Portable ${version}.${ext}"
+      "artifactName": "Sonora Portable ${version}.${ext}"
     }
   }
 }

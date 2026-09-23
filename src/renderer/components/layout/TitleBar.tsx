@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,13 +8,14 @@ import {
   Square,
   Copy,
   RefreshCw,
-} from 'lucide-react';
-import { useUIStore } from '../../stores/uiStore';
-import { useLibraryStore } from '../../stores/libraryStore';
+} from "lucide-react";
+import { useUIStore } from "../../stores/uiStore";
+import { useLibraryStore } from "../../stores/libraryStore";
 
 export const TitleBar: React.FC = () => {
   const { history, historyIndex, goBack, goForward } = useUIStore();
-  const { searchQuery, setSearchQuery, isScanning, scanProgress } = useLibraryStore();
+  const { searchQuery, setSearchQuery, isScanning, scanProgress } =
+    useLibraryStore();
   const [isMaximized, setIsMaximized] = useState(false);
 
   useEffect(() => {
@@ -42,10 +43,15 @@ export const TitleBar: React.FC = () => {
       {/* Left: Navigation buttons */}
       <div className="flex items-center gap-2 titlebar-no-drag">
         <div className="flex items-center gap-2 mr-3">
-          <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-sm shadow-indigo-500/50">
-            <span className="text-[11px] font-black text-white tracking-tighter">S</span>
+          <div className="w-5 h-5 rounded-md flex items-center justify-center overflow-hidden shadow-sm shadow-indigo-500/50">
+            <img
+              src="./icon.png"
+              alt="Sonora"
+              className="w-full h-full object-contain"
+            />
           </div>
-          <span className="text-xs font-extrabold tracking-wider bg-gradient-to-r from-white via-slate-200 to-indigo-200 bg-clip-text text-transparent">
+
+          <span className="text-xs font-extrabold tracking-wider bg-linear-to-r from-white via-slate-200 to-indigo-200 bg-clip-text text-transparent">
             SONORA
           </span>
         </div>
@@ -58,7 +64,6 @@ export const TitleBar: React.FC = () => {
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-
         <button
           onClick={goForward}
           disabled={!canGoForward}
@@ -82,7 +87,7 @@ export const TitleBar: React.FC = () => {
           />
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery('')}
+              onClick={() => setSearchQuery("")}
               className="absolute right-2 p-0.5 text-slate-500 hover:text-slate-300"
             >
               <X className="w-3 h-3" />
@@ -114,7 +119,7 @@ export const TitleBar: React.FC = () => {
           <button
             onClick={handleMaximize}
             className="w-9 h-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition"
-            title={isMaximized ? 'Restore' : 'Maximize'}
+            title={isMaximized ? "Restore" : "Maximize"}
           >
             {isMaximized ? (
               <Copy className="w-3 h-3 rotate-180" />
