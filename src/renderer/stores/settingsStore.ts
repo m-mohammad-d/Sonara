@@ -7,7 +7,7 @@ import type {
 } from "../../shared/types";
 import { AudioEngine } from "../audio/engine";
 import { EQ_PRESETS } from "../audio/presets";
-
+import { usePlayerStore } from "./playerStore";
 interface SettingsState extends UserSettings {
   isLoaded: boolean;
   notificationsEnabled: boolean;
@@ -93,10 +93,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   toggleShuffle: () => {
     const nextShuffle = !get().shuffle;
-    set({ shuffle: nextShuffle });
-    window.electronAPI.saveSettings({ shuffle: nextShuffle });
-  },
 
+    set({
+      shuffle: nextShuffle,
+    });
+
+    usePlayerStore.getState().toggleShuffleQueue(nextShuffle);
+
+    window.electronAPI.saveSettings({
+      shuffle: nextShuffle,
+    });
+  },
   setPlaybackRate: (playbackRate: number) => {
     set({ playbackRate });
     AudioEngine.getInstance().setPlaybackRate(playbackRate);
