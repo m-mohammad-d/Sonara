@@ -35,6 +35,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
   const engine = AudioEngine.getInstance();
 
   let hasRecordedPlay = false;
+  let mediaCommandUnsubscribe: (() => void) | null = null;
 
   const shuffleTracks = (tracks: Track[]): Track[] => {
     const result = [...tracks];
@@ -189,7 +190,32 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
           });
         },
       });
+
+      if (mediaCommandUnsubscribe) {
+        mediaCommandUnsubscribe();
+        mediaCommandUnsubscribe = null;
+      }
+
+      if (window.electronAPI?.onMediaCommand) {
+        mediaCommandUnsubscribe = window.electronAPI.onMediaCommand((command) => {
+          switch (command) {
+            case "play-pause":
+              get().togglePlay();
+              break;
+            case "next-track":
+              get().nextTrack();
+              break;
+            case "previous-track":
+              get().prevTrack();
+              break;
+            case "stop":
+              get().pause();
+              break;
+          }
+        });
+      }
     },
+
 
     playTrack: async (track: Track, newQueue?: Track[]) => {
       hasRecordedPlay = false;

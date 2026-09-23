@@ -17,4 +17,5 @@ export const IPC_CHANNELS = {
   WINDOW_CLOSE: "window:close",
   NOTIFICATION_SHOW: "notification:show",
   WINDOW_IS_MAXIMIZED: "window:is-maximized",
+  MEDIA_COMMAND: "media:command",
 } as const;

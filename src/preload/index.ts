@@ -5,6 +5,7 @@ import type {
   Playlist,
   ScanProgress,
   UserSettings,
+  MediaCommand,
 } from "../shared/types";
 
 export interface SonoraAPI {
@@ -14,6 +15,7 @@ export interface SonoraAPI {
   cancelScan: () => Promise<boolean>;
   removeFolder: (folder: string) => Promise<LibraryData>;
   onScanProgress: (callback: (progress: ScanProgress) => void) => () => void;
+  onMediaCommand: (callback: (command: MediaCommand) => void) => () => void;
   savePlaylist: (playlist: Playlist) => Promise<Playlist>;
   deletePlaylist: (playlistId: string) => Promise<boolean>;
   toggleFavorite: (trackId: string) => Promise<string[]>;
@@ -49,6 +51,18 @@ const api: SonoraAPI = {
         IPC_CHANNELS.LIBRARY_SCAN_PROGRESS,
         subscription,
       );
+    };
+  },
+  onMediaCommand: (callback: (command: MediaCommand) => void) => {
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      command: MediaCommand,
+    ) => {
+      callback(command);
+    };
+    ipcRenderer.on(IPC_CHANNELS.MEDIA_COMMAND, subscription);
+    return () => {
+      ipcRenderer.removeListener(IPC_CHANNELS.MEDIA_COMMAND, subscription);
     };
   },
   savePlaylist: (playlist: Playlist) =>

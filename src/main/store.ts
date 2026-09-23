@@ -5,6 +5,7 @@ import type { LibraryData, UserSettings } from '../shared/types';
 
 const DEFAULT_SETTINGS: UserSettings = {
   folders: [],
+  notificationsEnabled: true,
   volume: 0.8,
   isMuted: false,
   repeatMode: 'off',

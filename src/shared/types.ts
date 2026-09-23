@@ -94,3 +94,6 @@ export interface LibraryData {
   recentlyPlayed: string[];
   folders: string[];
 }
+
+export type MediaCommand = "play-pause" | "next-track" | "previous-track" | "stop";
+

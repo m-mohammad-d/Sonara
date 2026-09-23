@@ -1,8 +1,8 @@
-import { ipcMain, dialog, shell, BrowserWindow, Notification } from "electron";
+import { ipcMain, dialog, shell, BrowserWindow, Notification, globalShortcut } from "electron";
 import { IPC_CHANNELS } from "../shared/channels";
 import type { AppStore } from "./store";
 import type { LibraryScanner } from "./scanner";
-import type { Playlist, UserSettings } from "../shared/types";
+import type { Playlist, UserSettings, MediaCommand } from "../shared/types";
 
 export function registerIpcHandlers(
   store: AppStore,
@@ -206,3 +206,38 @@ export function registerIpcHandlers(
     return win?.isMaximized() ?? false;
   });
 }
+
+const MEDIA_SHORTCUTS: ReadonlyArray<{ accelerator: string; command: MediaCommand }> = [
+  { accelerator: "MediaPlayPause", command: "play-pause" },
+  { accelerator: "MediaNextTrack", command: "next-track" },
+  { accelerator: "MediaPreviousTrack", command: "previous-track" },
+  { accelerator: "MediaStop", command: "stop" },
+];
+
+export function registerMediaShortcuts(
+  getMainWindow: () => BrowserWindow | null,
+): void {
+  unregisterMediaShortcuts();
+
+  for (const { accelerator, command } of MEDIA_SHORTCUTS) {
+    try {
+      globalShortcut.register(accelerator, () => {
+        const win = getMainWindow();
+        if (win && !win.isDestroyed() && !win.webContents.isDestroyed()) {
+          win.webContents.send(IPC_CHANNELS.MEDIA_COMMAND, command);
+        }
+      });
+    } catch (err) {
+      console.error(`Failed to register global shortcut ${accelerator}:`, err);
+    }
+  }
+}
+
+export function unregisterMediaShortcuts(): void {
+  for (const { accelerator } of MEDIA_SHORTCUTS) {
+    if (globalShortcut.isRegistered(accelerator)) {
+      globalShortcut.unregister(accelerator);
+    }
+  }
+}
+

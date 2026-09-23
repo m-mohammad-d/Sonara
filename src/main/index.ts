@@ -4,8 +4,11 @@ import { fileURLToPath } from 'node:url';
 import { registerMediaSchemePrivilege, setupMediaProtocol } from './protocol';
 import { AppStore } from './store';
 import { LibraryScanner } from './scanner';
-import { registerIpcHandlers } from './ipc';
+import { registerIpcHandlers, registerMediaShortcuts, unregisterMediaShortcuts } from './ipc';
 import { createAppTray, destroyAppTray, getAppIcon } from './tray';
+
+// Disable Chromium's internal media key handling so Electron globalShortcut handles media keys
+app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling');
 
 // Register custom media scheme privilege before app is ready
 registerMediaSchemePrivilege();
@@ -27,10 +30,12 @@ if (!gotSingleInstanceLock) {
 
   app.on('before-quit', () => {
     isQuitting = true;
+    unregisterMediaShortcuts();
     destroyAppTray();
   });
 
   app.on('will-quit', () => {
+    unregisterMediaShortcuts();
     destroyAppTray();
   });
 
@@ -53,6 +58,7 @@ if (!gotSingleInstanceLock) {
     });
 
     registerIpcHandlers(store, scanner, () => mainWindow);
+    registerMediaShortcuts(() => mainWindow);
 
     app.on('activate', () => {
       showMainWindow();
