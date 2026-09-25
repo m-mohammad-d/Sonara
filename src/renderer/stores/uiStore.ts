@@ -30,6 +30,17 @@ interface ContextMenuData {
   playlistId?: string;
 }
 
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
+export interface ToastData {
+  title: string;
+  message: string;
+  action?: ToastAction;
+}
+
 interface UIState {
   currentView: ViewType;
   selectedAlbumId: string | null;
@@ -41,7 +52,7 @@ interface UIState {
   isEqualizerOpen: boolean;
   isNewPlaylistModalOpen: boolean;
   contextMenu: ContextMenuData | null;
-  toast: { title: string; message: string } | null;
+  toast: ToastData | null;
 
   history: ViewHistoryItem[];
   historyIndex: number;
@@ -54,7 +65,7 @@ interface UIState {
   toggleNewPlaylistModal: (open?: boolean) => void;
   openContextMenu: (data: ContextMenuData) => void;
   closeContextMenu: () => void;
-  showToast: (title: string, message: string) => void;
+  showToast: (title: string, message: string, action?: ToastAction) => void;
   clearToast: () => void;
 }
 
@@ -165,15 +176,15 @@ export const useUIStore = create<UIState>((set, get) => {
       set({ contextMenu: null });
     },
 
-    showToast: (title: string, message: string) => {
+    showToast: (title: string, message: string, action?: ToastAction) => {
       if (toastTimer) {
         clearTimeout(toastTimer);
       }
-      set({ toast: { title, message } });
+      set({ toast: { title, message, action } });
       toastTimer = setTimeout(() => {
         set({ toast: null });
         toastTimer = null;
-      }, 4500);
+      }, 5000);
     },
 
     clearToast: () => {

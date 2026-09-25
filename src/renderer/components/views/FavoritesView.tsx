@@ -6,6 +6,7 @@ import { usePlayerStore } from '../../stores/playerStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatTime } from '../../utils/formatters';
 import { EmptyState } from '../common/EmptyState';
+import { ExportMenu } from '../export/ExportMenu';
 
 export const FavoritesView: React.FC = () => {
   const { favorites, toggleFavorite } = usePlaylistStore();
@@ -69,6 +70,12 @@ export const FavoritesView: React.FC = () => {
             <Shuffle className="w-3.5 h-3.5 text-accent-text" />
             <span>Shuffle</span>
           </button>
+
+          <ExportMenu
+            collectionName="Favorites"
+            source="favorites"
+            tracks={favoriteTracks}
+          />
         </div>
       </div>
 

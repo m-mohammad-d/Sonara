@@ -3,6 +3,8 @@ import { IPC_CHANNELS } from "../shared/channels";
 import type { AppStore } from "./store";
 import type { LibraryScanner } from "./scanner";
 import type { Playlist, UserSettings, MediaCommand } from "../shared/types";
+import type { ExportRequest } from "../shared/export/types";
+import { handleExportMusicList } from "./export/exportManager";
 
 export function registerIpcHandlers(
   store: AppStore,
@@ -149,6 +151,14 @@ export function registerIpcHandlers(
     (_event, filePath: string) => {
       shell.showItemInFolder(filePath);
       return true;
+    },
+  );
+
+  // Export music list
+  ipcMain.handle(
+    IPC_CHANNELS.EXPORT_MUSIC_LIST,
+    (_event, request: ExportRequest) => {
+      return handleExportMusicList(request, getMainWindow);
     },
   );
 

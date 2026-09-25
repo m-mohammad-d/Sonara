@@ -7,6 +7,7 @@ import type {
   UserSettings,
   MediaCommand,
 } from "../shared/types";
+import type { ExportRequest, ExportResult } from "../shared/export/types";
 
 export interface SonoraAPI {
   selectFolders: () => Promise<string[]>;
@@ -28,6 +29,7 @@ export interface SonoraAPI {
   closeWindow: () => Promise<void>;
   isWindowMaximized: () => Promise<boolean>;
   showNotification: (title: string, artist: string) => Promise<boolean>;
+  exportMusicList: (request: ExportRequest) => Promise<ExportResult>;
 }
 
 const api: SonoraAPI = {
@@ -85,6 +87,9 @@ const api: SonoraAPI = {
     ipcRenderer.invoke(IPC_CHANNELS.NOTIFICATION_SHOW, { title, artist }),
 
   isWindowMaximized: () => ipcRenderer.invoke(IPC_CHANNELS.WINDOW_IS_MAXIMIZED),
+
+  exportMusicList: (request: ExportRequest) =>
+    ipcRenderer.invoke(IPC_CHANNELS.EXPORT_MUSIC_LIST, request),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);

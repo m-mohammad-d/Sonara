@@ -3,6 +3,7 @@ import { X, Trash2, Music2, ChevronUp, ChevronDown, Play } from 'lucide-react';
 import { usePlayerStore } from '../../stores/playerStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatTime } from '../../utils/formatters';
+import { ExportMenu } from '../export/ExportMenu';
 
 export const QueuePanel: React.FC = () => {
   const { isQueueOpen, toggleQueue } = useUIStore();
@@ -34,6 +35,14 @@ export const QueuePanel: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-1">
+          {queue.length > 0 && (
+            <ExportMenu
+              collectionName="Playback Queue"
+              source="queue"
+              tracks={queue}
+              iconOnly
+            />
+          )}
           {queue.length > 0 && (
             <button
               onClick={clearQueue}

@@ -5,6 +5,7 @@ import { usePlayerStore } from '../../stores/playerStore';
 import { usePlaylistStore } from '../../stores/playlistStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatTime } from '../../utils/formatters';
+import { ExportMenu } from '../export/ExportMenu';
 
 export const AlbumDetailView: React.FC = () => {
   const { selectedAlbumId, goBack, navigate, openContextMenu } = useUIStore();
@@ -115,6 +116,12 @@ export const AlbumDetailView: React.FC = () => {
               <Shuffle className="w-3.5 h-3.5 text-accent-text" />
               <span>Shuffle</span>
             </button>
+
+            <ExportMenu
+              collectionName={album.name}
+              source="album"
+              tracks={albumTracks}
+            />
           </div>
         </div>
       </div>

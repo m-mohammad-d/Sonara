@@ -13,6 +13,7 @@ import { usePlaylistStore } from '../../stores/playlistStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatTime, formatDate } from '../../utils/formatters';
 import { EmptyState } from '../common/EmptyState';
+import { ExportMenu } from '../export/ExportMenu';
 import type { Track } from '../../../shared/types';
 
 export const TracksView: React.FC = () => {
@@ -105,6 +106,13 @@ export const TracksView: React.FC = () => {
             <Shuffle className="w-3.5 h-3.5 text-accent-text" />
             <span>Shuffle</span>
           </button>
+
+          <ExportMenu
+            collectionName={searchQuery.trim() ? `Library (${searchQuery.trim()})` : "Music Library"}
+            source="library"
+            tracks={tracks}
+            label={searchQuery.trim() ? `Export (${tracks.length})` : "Export"}
+          />
         </div>
       </div>
 

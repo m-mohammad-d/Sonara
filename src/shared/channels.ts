@@ -18,4 +18,5 @@ export const IPC_CHANNELS = {
   NOTIFICATION_SHOW: "notification:show",
   WINDOW_IS_MAXIMIZED: "window:is-maximized",
   MEDIA_COMMAND: "media:command",
+  EXPORT_MUSIC_LIST: "export:music-list",
 } as const;

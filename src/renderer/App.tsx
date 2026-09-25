@@ -134,6 +134,17 @@ export const App: React.FC = () => {
             <p className="text-xs font-bold text-foreground">{toast.title}</p>
             <p className="text-[11px] text-foreground-muted">{toast.message}</p>
           </div>
+          {toast.action && (
+            <button
+              onClick={() => {
+                toast.action?.onClick();
+                clearToast();
+              }}
+              className="text-xs px-2.5 py-1.5 rounded-lg bg-accent text-accent-fg hover:bg-accent-hover font-semibold transition shrink-0 ml-1 shadow-sm"
+            >
+              {toast.action.label}
+            </button>
+          )}
           <button
             onClick={clearToast}
             aria-label="Dismiss notification"

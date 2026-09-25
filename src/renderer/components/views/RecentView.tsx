@@ -7,6 +7,7 @@ import { usePlayerStore } from '../../stores/playerStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatTime } from '../../utils/formatters';
 import { EmptyState } from '../common/EmptyState';
+import { ExportMenu } from '../export/ExportMenu';
 
 export const RecentView: React.FC = () => {
   const { recentlyPlayed, isFavorite, toggleFavorite } = usePlaylistStore();
@@ -67,6 +68,12 @@ export const RecentView: React.FC = () => {
             <Shuffle className="w-3.5 h-3.5 text-accent-text" />
             <span>Shuffle</span>
           </button>
+
+          <ExportMenu
+            collectionName="Recently Played"
+            source="recently-played"
+            tracks={recentTracks}
+          />
         </div>
       </div>
 

@@ -10,7 +10,7 @@ export const PlaylistsView: React.FC = () => {
   const { playlists, deletePlaylist } = usePlaylistStore();
   const { tracks } = useLibraryStore();
   const { playTrack } = usePlayerStore();
-  const { navigate, toggleNewPlaylistModal } = useUIStore();
+  const { navigate, toggleNewPlaylistModal, openContextMenu } = useUIStore();
 
   const playlistItems = Object.values(playlists);
 
@@ -67,6 +67,10 @@ export const PlaylistsView: React.FC = () => {
               <div
                 key={pl.id}
                 onClick={() => navigate('playlist-detail', { selectedPlaylistId: pl.id })}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  openContextMenu({ x: e.clientX, y: e.clientY, playlistId: pl.id });
+                }}
                 className="group glass-card p-3.5 rounded-2xl cursor-pointer flex flex-col transition hover:-translate-y-1 duration-150"
               >
                 <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-surface-input mb-3 shadow-md flex items-center justify-center border border-border-subtle">
