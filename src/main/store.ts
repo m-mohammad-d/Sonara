@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS: UserSettings = {
     bands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     preamp: 0,
   },
+  shortcuts: {},
 };
 
 const DEFAULT_LIBRARY_DATA: LibraryData = {

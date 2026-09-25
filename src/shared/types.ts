@@ -90,6 +90,13 @@ export type ThemeName = ThemeMode;
 export type VisualizerMode = "spectrum" | "waveform" | "bars" | "circular";
 export type RepeatMode = "off" | "all" | "one";
 
+export interface UserShortcutConfig {
+  keys: string | null;
+  enabled?: boolean;
+}
+
+export type UserShortcutOverrides = Record<string, UserShortcutConfig | string | null>;
+
 export interface UserSettings {
   folders: string[];
   notificationsEnabled: boolean;
@@ -105,6 +112,7 @@ export interface UserSettings {
   theme?: string;
   visualizerMode: VisualizerMode;
   equalizer: EqualizerSettings;
+  shortcuts?: UserShortcutOverrides;
 }
 
 export interface LibraryData {

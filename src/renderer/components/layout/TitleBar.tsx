@@ -79,6 +79,7 @@ export const TitleBar: React.FC = () => {
         <div className="relative flex items-center">
           <Search className="absolute left-2.5 w-3.5 h-3.5 text-foreground-subtle pointer-events-none" />
           <input
+            id="sonora-search-input"
             type="text"
             placeholder="Search tracks, albums, artists, genres..."
             value={searchQuery}

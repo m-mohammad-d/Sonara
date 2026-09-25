@@ -1,83 +1,165 @@
-import { useEffect } from 'react';
-import { usePlayerStore } from '../stores/playerStore';
-import { useSettingsStore } from '../stores/settingsStore';
-import { useUIStore } from '../stores/uiStore';
+import { useEffect } from "react";
+import { useUIStore } from "../stores/uiStore";
+import { usePlayerStore } from "../stores/playerStore";
+import { combosMatch, eventToKeyCombo } from "../utils/keyUtils";
+import { useShortcutStore } from "../stores/shortcutStore";
 
 export function useKeyboardShortcuts(): void {
   useEffect(() => {
+    // Load shortcuts from electron settings if not loaded yet
+    if (!useShortcutStore.getState().isLoaded) {
+      if (window.electronAPI?.getSettings) {
+        window.electronAPI
+          .getSettings()
+          .then((settings) => {
+            useShortcutStore.getState().initShortcuts(settings?.shortcuts);
+          })
+          .catch(() => {
+            useShortcutStore.getState().initShortcuts();
+          });
+      } else {
+        useShortcutStore.getState().initShortcuts();
+      }
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts when typing in inputs or textareas
-      const target = e.target as HTMLElement | null;
+      const {
+        contextMenu,
+        closeContextMenu,
+        isEqualizerOpen,
+        toggleEqualizer,
+        isNewPlaylistModalOpen,
+        toggleNewPlaylistModal,
+        isQueueOpen,
+        toggleQueue,
+      } = useUIStore.getState();
+
+      const {
+        editingShortcutId,
+        setEditingShortcutId,
+        destructivePendingShortcutId,
+        setDestructivePendingShortcutId,
+        shortcuts,
+        executeShortcut,
+      } = useShortcutStore.getState();
+
+      // 1. Context-aware Escape dismissal hierarchy
       if (
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target?.isContentEditable
+        e.code === "Escape" &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        !e.shiftKey &&
+        !e.metaKey
       ) {
+        if (editingShortcutId) {
+          e.preventDefault();
+          setEditingShortcutId(null);
+          return;
+        }
+
+        if (destructivePendingShortcutId) {
+          e.preventDefault();
+          setDestructivePendingShortcutId(null);
+          return;
+        }
+
+        if (contextMenu) {
+          e.preventDefault();
+          closeContextMenu();
+          return;
+        }
+
+        if (isEqualizerOpen) {
+          e.preventDefault();
+          toggleEqualizer(false);
+          return;
+        }
+
+        if (isNewPlaylistModalOpen) {
+          e.preventDefault();
+          toggleNewPlaylistModal(false);
+          return;
+        }
+
+        if (isQueueOpen) {
+          e.preventDefault();
+          toggleQueue(false);
+          return;
+        }
+
+        // Blur active input/textarea if focused
+        const activeEl = document.activeElement as HTMLElement | null;
+        if (
+          activeEl instanceof HTMLInputElement ||
+          activeEl instanceof HTMLTextAreaElement ||
+          activeEl?.isContentEditable
+        ) {
+          activeEl.blur();
+          return;
+        }
+
         return;
       }
 
-      const { togglePlay, seek, currentTime, duration, nextTrack, prevTrack } = usePlayerStore.getState();
-      const { volume, setVolume, toggleMute } = useSettingsStore.getState();
-      const { closeContextMenu, toggleQueue, toggleEqualizer, toggleNewPlaylistModal, isQueueOpen, isEqualizerOpen, isNewPlaylistModalOpen, contextMenu } = useUIStore.getState();
+      // If key recorder modal is open, let the recorder handle input
+      if (editingShortcutId) {
+        return;
+      }
 
-      switch (e.code) {
-        case 'Space':
+      const target = e.target as HTMLElement | null;
+      const isTyping =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        target?.isContentEditable;
+
+      const { combo, isModifierOnly } = eventToKeyCombo(e);
+      if (isModifierOnly || !combo) {
+        return;
+      }
+
+      // Find matching active shortcut
+      const matched = Object.values(shortcuts).find(
+        (s) => s.enabled && s.keys && combosMatch(s.keys, combo),
+      );
+
+      if (matched) {
+        // Enforce input field safety: skip unless explicitly permitted
+        if (isTyping && !matched.allowInInput) {
+          return;
+        }
+
+        e.preventDefault();
+        executeShortcut(matched.id);
+        return;
+      }
+
+      // Preserve legacy single-key navigation (N for next track, P for previous track) if not typing
+      if (!isTyping) {
+        const hasCustomN = Object.values(shortcuts).some(
+          (s) => s.enabled && combosMatch(s.keys, "N"),
+        );
+        const hasCustomP = Object.values(shortcuts).some(
+          (s) => s.enabled && combosMatch(s.keys, "P"),
+        );
+
+        if (combo === "N" && !hasCustomN) {
           e.preventDefault();
-          togglePlay();
-          break;
+          usePlayerStore.getState().nextTrack();
+          return;
+        }
 
-        case 'ArrowLeft':
+        if (combo === "P" && !hasCustomP) {
           e.preventDefault();
-          seek(Math.max(0, currentTime - 5));
-          break;
-
-        case 'ArrowRight':
-          e.preventDefault();
-          seek(Math.min(duration, currentTime + 5));
-          break;
-
-        case 'ArrowUp':
-          e.preventDefault();
-          setVolume(Math.min(1, volume + 0.05));
-          break;
-
-        case 'ArrowDown':
-          e.preventDefault();
-          setVolume(Math.max(0, volume - 0.05));
-          break;
-
-        case 'KeyM':
-          e.preventDefault();
-          toggleMute();
-          break;
-
-        case 'KeyN':
-          e.preventDefault();
-          nextTrack();
-          break;
-
-        case 'KeyP':
-          e.preventDefault();
-          prevTrack();
-          break;
-
-        case 'Escape':
-          if (contextMenu) {
-            closeContextMenu();
-          } else if (isEqualizerOpen) {
-            toggleEqualizer(false);
-          } else if (isNewPlaylistModalOpen) {
-            toggleNewPlaylistModal(false);
-          } else if (isQueueOpen) {
-            toggleQueue(false);
-          }
-          break;
+          usePlayerStore.getState().prevTrack();
+          return;
+        }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 }

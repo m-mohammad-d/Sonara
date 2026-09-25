@@ -6,7 +6,6 @@ import {
   RefreshCw,
   Sliders,
   Activity,
-  Keyboard,
   Info,
   Bell,
   Palette,
@@ -21,6 +20,8 @@ import { EQ_PRESETS } from "../../audio/presets";
 import { AudioVisualizer } from "../visualizer/AudioVisualizer";
 import { ACCENT_PRESETS, type AccentColor } from "../../theme/theme";
 import type { VisualizerMode } from "../../../shared/types";
+
+import { KeyboardShortcutsSection } from "../shortcuts/KeyboardShortcutsSection";
 
 export const SettingsView: React.FC = () => {
   const {
@@ -49,16 +50,6 @@ export const SettingsView: React.FC = () => {
   } = useSettingsStore();
 
   const { toggleEqualizer: openEqModal } = useUIStore();
-
-  const shortcuts = [
-    { key: "Space", desc: "Play / Pause playback" },
-    { key: "←  /  →", desc: "Seek 5 seconds backward / forward" },
-    { key: "↑  /  ↓", desc: "Increase / decrease volume by 5%" },
-    { key: "M", desc: "Mute / Unmute volume" },
-    { key: "N", desc: "Next track in queue" },
-    { key: "P", desc: "Previous track in queue" },
-    { key: "Esc", desc: "Dismiss dialogs, context menus, and drawers" },
-  ];
 
   return (
     <div className="flex-1 flex flex-col h-full w-full overflow-hidden p-6 select-none">
@@ -492,35 +483,7 @@ export const SettingsView: React.FC = () => {
         </section>
 
         {/* Section 6: Keyboard Shortcuts */}
-        <section className="glass-card p-5 rounded-2xl flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-accent-subtle text-accent-text">
-              <Keyboard className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-foreground">
-                Keyboard Shortcuts
-              </h2>
-              <p className="text-xs text-foreground-muted">
-                Global hotkeys configured for seamless desktop playback control
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
-            {shortcuts.map((s) => (
-              <div
-                key={s.key}
-                className="flex items-center justify-between p-2.5 rounded-xl bg-surface-input border border-border-subtle text-xs"
-              >
-                <span className="text-foreground-secondary">{s.desc}</span>
-                <kbd className="px-2 py-0.5 rounded-md bg-surface-hover font-mono text-[11px] text-foreground border border-border-subtle">
-                  {s.key}
-                </kbd>
-              </div>
-            ))}
-          </div>
-        </section>
+        <KeyboardShortcutsSection />
 
         {/* Section 7: Application Info */}
         <section className="glass-card p-5 rounded-2xl flex items-center justify-between text-xs text-foreground-subtle">
