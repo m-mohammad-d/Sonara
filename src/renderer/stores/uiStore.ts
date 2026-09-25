@@ -41,6 +41,7 @@ interface UIState {
   isEqualizerOpen: boolean;
   isNewPlaylistModalOpen: boolean;
   contextMenu: ContextMenuData | null;
+  toast: { title: string; message: string } | null;
 
   history: ViewHistoryItem[];
   historyIndex: number;
@@ -53,7 +54,11 @@ interface UIState {
   toggleNewPlaylistModal: (open?: boolean) => void;
   openContextMenu: (data: ContextMenuData) => void;
   closeContextMenu: () => void;
+  showToast: (title: string, message: string) => void;
+  clearToast: () => void;
 }
+
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
 export const useUIStore = create<UIState>((set, get) => {
   const initialHistoryItem: ViewHistoryItem = {
@@ -75,6 +80,7 @@ export const useUIStore = create<UIState>((set, get) => {
     isEqualizerOpen: false,
     isNewPlaylistModalOpen: false,
     contextMenu: null,
+    toast: null,
 
     history: [initialHistoryItem],
     historyIndex: 0,
@@ -157,6 +163,25 @@ export const useUIStore = create<UIState>((set, get) => {
 
     closeContextMenu: () => {
       set({ contextMenu: null });
+    },
+
+    showToast: (title: string, message: string) => {
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+      }
+      set({ toast: { title, message } });
+      toastTimer = setTimeout(() => {
+        set({ toast: null });
+        toastTimer = null;
+      }, 4500);
+    },
+
+    clearToast: () => {
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+        toastTimer = null;
+      }
+      set({ toast: null });
     },
   };
 });

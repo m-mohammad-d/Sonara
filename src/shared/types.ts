@@ -97,6 +97,14 @@ export interface UserShortcutConfig {
 
 export type UserShortcutOverrides = Record<string, UserShortcutConfig | string | null>;
 
+export type SleepTimerMode = "off" | "duration" | "end-of-track";
+
+export interface SleepTimerPersisted {
+  mode: "off" | "duration";
+  targetTime: number | null;
+  durationMinutes: number | null;
+}
+
 export interface UserSettings {
   folders: string[];
   notificationsEnabled: boolean;
@@ -113,6 +121,7 @@ export interface UserSettings {
   visualizerMode: VisualizerMode;
   equalizer: EqualizerSettings;
   shortcuts?: UserShortcutOverrides;
+  sleepTimer?: SleepTimerPersisted;
 }
 
 export interface LibraryData {

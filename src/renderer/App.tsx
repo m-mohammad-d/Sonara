@@ -24,10 +24,13 @@ import { useSettingsStore } from './stores/settingsStore';
 import { useLibraryStore } from './stores/libraryStore';
 import { usePlaylistStore } from './stores/playlistStore';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { AlertCircle, X } from 'lucide-react';
+import { useSleepTimerStore } from './stores/sleepTimerStore';
+import { AlertCircle, X, Moon } from 'lucide-react';
 
 export const App: React.FC = () => {
   const currentView = useUIStore((s) => s.currentView);
+  const toast = useUIStore((s) => s.toast);
+  const clearToast = useUIStore((s) => s.clearToast);
   const { initSettings } = useSettingsStore();
   const { initPlayer, errorMessage, clearError } = usePlayerStore();
   const { initLibrary } = useLibraryStore();
@@ -36,7 +39,11 @@ export const App: React.FC = () => {
   useKeyboardShortcuts();
 
   useEffect(() => {
-    initSettings();
+    const init = async () => {
+      await initSettings();
+      useSleepTimerStore.getState().initSleepTimer();
+    };
+    init();
     initPlayer();
     initLibrary();
     initPlaylists();
@@ -112,6 +119,30 @@ export const App: React.FC = () => {
       <EqualizerModal />
       <NewPlaylistModal />
       <ContextMenu />
+
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-24 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl glass-panel shadow-2xl border border-accent-border/50 bg-surface-elevated/95 animate-in fade-in slide-in-from-bottom-2 duration-200 text-foreground"
+        >
+          <div className="p-2 rounded-xl bg-accent-subtle text-accent-text shrink-0">
+            <Moon className="w-4 h-4" />
+          </div>
+          <div className="flex flex-col pr-1">
+            <p className="text-xs font-bold text-foreground">{toast.title}</p>
+            <p className="text-[11px] text-foreground-muted">{toast.message}</p>
+          </div>
+          <button
+            onClick={clearToast}
+            aria-label="Dismiss notification"
+            className="p-1 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-hover transition ml-1"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

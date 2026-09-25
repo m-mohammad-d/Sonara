@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { Track } from "../../shared/types";
 import { AudioEngine } from "../audio/engine";
 import { useSettingsStore } from "./settingsStore";
+import { useSleepTimerStore } from "./sleepTimerStore";
 
 interface PlayerState {
   currentTrack: Track | null;
@@ -167,6 +168,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
         },
 
         onEnded: async () => {
+          if (useSleepTimerStore.getState().handleTrackEnded()) {
+            set({
+              isPlaying: false,
+              currentTime: 0,
+            });
+            return;
+          }
+
           const { repeatMode } = useSettingsStore.getState();
           const { currentTrack } = get();
 

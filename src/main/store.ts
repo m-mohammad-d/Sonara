@@ -22,6 +22,11 @@ const DEFAULT_SETTINGS: UserSettings = {
     preamp: 0,
   },
   shortcuts: {},
+  sleepTimer: {
+    mode: 'off',
+    targetTime: null,
+    durationMinutes: null,
+  },
 };
 
 const DEFAULT_LIBRARY_DATA: LibraryData = {

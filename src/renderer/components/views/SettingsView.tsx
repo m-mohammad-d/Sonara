@@ -22,6 +22,8 @@ import { ACCENT_PRESETS, type AccentColor } from "../../theme/theme";
 import type { VisualizerMode } from "../../../shared/types";
 
 import { KeyboardShortcutsSection } from "../shortcuts/KeyboardShortcutsSection";
+import { useSleepTimerStore } from "../../stores/sleepTimerStore";
+import { formatTime } from "../../utils/formatters";
 
 export const SettingsView: React.FC = () => {
   const {
@@ -48,6 +50,12 @@ export const SettingsView: React.FC = () => {
     notificationsEnabled,
     toggleNotifications,
   } = useSettingsStore();
+
+  const {
+    mode: sleepTimerMode,
+    remainingSeconds: sleepTimerRemaining,
+    clearTimer: clearSleepTimer,
+  } = useSleepTimerStore();
 
   const { toggleEqualizer: openEqModal } = useUIStore();
 
@@ -396,6 +404,47 @@ export const SettingsView: React.FC = () => {
                     {rate}x
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Sleep Timer Status */}
+            <div className="p-4 rounded-xl bg-surface-input border border-border-subtle flex flex-col gap-3 md:col-span-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-accent-subtle text-accent-text">
+                    <Moon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-foreground">
+                      Sleep Timer
+                    </span>
+                    <p className="text-[11px] text-foreground-muted">
+                      Automatically pause playback after a set duration or when the current track finishes
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {sleepTimerMode !== "off" ? (
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-lg bg-accent-subtle border border-accent-border text-accent-text text-xs font-mono font-medium">
+                        {sleepTimerMode === "duration"
+                          ? `${formatTime(sleepTimerRemaining || 0)} remaining`
+                          : "End of track"}
+                      </span>
+                      <button
+                        onClick={clearSleepTimer}
+                        className="px-3 py-1 rounded-xl text-xs font-semibold text-red-300 hover:text-red-200 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 transition"
+                      >
+                        Turn Off
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-foreground-subtle">
+                      Inactive (accessible from Player Bar)
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

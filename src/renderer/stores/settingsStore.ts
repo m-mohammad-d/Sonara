@@ -51,6 +51,11 @@ const DEFAULT_SETTINGS: UserSettings = {
     bands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     preamp: 0,
   },
+  sleepTimer: {
+    mode: "off",
+    targetTime: null,
+    durationMinutes: null,
+  },
 };
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Play,
   Pause,
@@ -14,11 +14,14 @@ import {
   Heart,
   Music2,
   Activity,
+  Moon,
 } from 'lucide-react';
 import { usePlayerStore } from '../../stores/playerStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { usePlaylistStore } from '../../stores/playlistStore';
 import { useUIStore } from '../../stores/uiStore';
+import { useSleepTimerStore } from '../../stores/sleepTimerStore';
+import { SleepTimerPopover } from '../player/SleepTimerPopover';
 import { Slider } from '../common/Slider';
 import { formatTime } from '../../utils/formatters';
 
@@ -54,8 +57,13 @@ export const PlayerBar: React.FC = () => {
 
   const { toggleFavorite, isFavorite } = usePlaylistStore();
   const { isQueueOpen, toggleQueue, toggleEqualizer, navigate } = useUIStore();
+  const { mode: sleepTimerMode, remainingSeconds: sleepTimerRemaining } = useSleepTimerStore();
 
   const [showVisualizerMenu, setShowVisualizerMenu] = useState(false);
+  const [showSleepTimerMenu, setShowSleepTimerMenu] = useState(false);
+  const sleepTimerBtnRef = useRef<HTMLButtonElement>(null);
+
+  const isSleepTimerActive = sleepTimerMode !== 'off';
 
   const favorited = currentTrack ? isFavorite(currentTrack.id) : false;
 
@@ -271,6 +279,44 @@ export const PlayerBar: React.FC = () => {
             <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-accent" />
           )}
         </button>
+
+        {/* Sleep Timer Toggle & Popover */}
+        <div className="relative">
+          <button
+            ref={sleepTimerBtnRef}
+            onClick={() => setShowSleepTimerMenu(!showSleepTimerMenu)}
+            aria-label="Sleep timer"
+            aria-expanded={showSleepTimerMenu}
+            aria-haspopup="dialog"
+            className={`transition flex items-center gap-1.5 text-xs font-mono font-medium rounded-lg ${
+              isSleepTimerActive
+                ? 'px-2 py-1 bg-accent-subtle text-accent-text border border-accent-border shadow-sm'
+                : 'p-1.5 text-foreground-muted hover:text-foreground hover:bg-surface-hover'
+            }`}
+            title={
+              isSleepTimerActive
+                ? sleepTimerMode === 'duration'
+                  ? `Sleep Timer: ${formatTime(sleepTimerRemaining || 0)} remaining`
+                  : 'Sleep Timer: End of current track'
+                : 'Sleep Timer: Off'
+            }
+          >
+            <Moon className="w-4 h-4 shrink-0" />
+            {isSleepTimerActive && (
+              <span className="truncate max-w-[70px]">
+                {sleepTimerMode === 'duration'
+                  ? formatTime(sleepTimerRemaining || 0)
+                  : 'End of track'}
+              </span>
+            )}
+          </button>
+
+          <SleepTimerPopover
+            isOpen={showSleepTimerMenu}
+            onClose={() => setShowSleepTimerMenu(false)}
+            triggerRef={sleepTimerBtnRef}
+          />
+        </div>
 
         {/* Queue Drawer Toggle */}
         <button
