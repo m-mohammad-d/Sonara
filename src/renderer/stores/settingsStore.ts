@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import type {
   UserSettings,
+  ThemeMode,
+  AccentColor,
   ThemeName,
   VisualizerMode,
   RepeatMode,
@@ -8,6 +10,8 @@ import type {
 import { AudioEngine } from "../audio/engine";
 import { EQ_PRESETS } from "../audio/presets";
 import { usePlayerStore } from "./playerStore";
+import { applyTheme } from "../theme/theme";
+
 interface SettingsState extends UserSettings {
   isLoaded: boolean;
   notificationsEnabled: boolean;
@@ -17,6 +21,8 @@ interface SettingsState extends UserSettings {
   setRepeatMode: (mode: RepeatMode) => void;
   toggleShuffle: () => void;
   setPlaybackRate: (rate: number) => void;
+  setThemeMode: (mode: ThemeMode) => void;
+  setAccentColor: (accent: AccentColor) => void;
   setTheme: (theme: ThemeName) => void;
   setVisualizerMode: (mode: VisualizerMode) => void;
   setEqualizerPreset: (presetName: string) => void;
@@ -35,6 +41,8 @@ const DEFAULT_SETTINGS: UserSettings = {
   repeatMode: "off",
   shuffle: false,
   playbackRate: 1,
+  themeMode: "dark",
+  accentColor: "blue",
   theme: "dark",
   visualizerMode: "spectrum",
   equalizer: {
@@ -53,8 +61,18 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     if (get().isLoaded) return;
     try {
       const saved = await window.electronAPI.getSettings();
-      const merged = { ...DEFAULT_SETTINGS, ...saved };
+      const themeMode: ThemeMode =
+        saved.themeMode || (saved.theme === "light" ? "light" : "dark");
+      const accentColor: AccentColor = saved.accentColor || "blue";
+
+      const merged = {
+        ...DEFAULT_SETTINGS,
+        ...saved,
+        themeMode,
+        accentColor,
+      };
       set({ ...merged, isLoaded: true });
+      applyTheme(themeMode, accentColor);
 
       // Apply initial values to audio engine
       const engine = AudioEngine.getInstance();
@@ -65,6 +83,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       engine.setPreamp(merged.equalizer.preamp);
     } catch (err) {
       console.error("Failed to init settings:", err);
+      applyTheme(get().themeMode, get().accentColor);
       set({ isLoaded: true });
     }
   },
@@ -110,9 +129,20 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     window.electronAPI.saveSettings({ playbackRate });
   },
 
+  setThemeMode: (themeMode: ThemeMode) => {
+    set({ themeMode, theme: themeMode });
+    applyTheme(themeMode, get().accentColor);
+    window.electronAPI.saveSettings({ themeMode, theme: themeMode });
+  },
+
+  setAccentColor: (accentColor: AccentColor) => {
+    set({ accentColor });
+    applyTheme(get().themeMode, accentColor);
+    window.electronAPI.saveSettings({ accentColor });
+  },
+
   setTheme: (theme: ThemeName) => {
-    set({ theme });
-    window.electronAPI.saveSettings({ theme });
+    get().setThemeMode(theme === "light" ? "light" : "dark");
   },
 
   setVisualizerMode: (visualizerMode: VisualizerMode) => {

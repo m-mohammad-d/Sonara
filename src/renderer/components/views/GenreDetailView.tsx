@@ -14,9 +14,12 @@ export const GenreDetailView: React.FC = () => {
 
   if (!selectedGenre) {
     return (
-      <div className="p-8 text-center text-slate-400">
+      <div className="p-8 text-center text-foreground-muted">
         <p>No genre selected.</p>
-        <button onClick={goBack} className="mt-4 px-4 py-2 rounded-xl bg-white/10 text-xs text-white">
+        <button
+          onClick={goBack}
+          className="mt-4 px-4 py-2 rounded-xl bg-surface-hover hover:bg-surface-elevated text-xs text-foreground transition"
+        >
           Go Back
         </button>
       </div>
@@ -44,44 +47,44 @@ export const GenreDetailView: React.FC = () => {
       <div className="mb-4">
         <button
           onClick={goBack}
-          className="flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white transition"
+          className="flex items-center gap-2 text-xs font-medium text-foreground-muted hover:text-foreground transition"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Genres</span>
         </button>
       </div>
 
-      <div className="flex items-end gap-6 mb-8 pb-6 border-b border-white/5">
-        <div className="w-28 h-28 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 shrink-0 flex items-center justify-center shadow-xl">
-          <Radio className="w-12 h-12 text-white" />
+      <div className="flex items-end gap-6 mb-8 pb-6 border-b border-border-subtle">
+        <div className="w-28 h-28 rounded-2xl bg-gradient-to-tr from-accent to-accent-hover shrink-0 flex items-center justify-center shadow-xl">
+          <Radio className="w-12 h-12 text-accent-fg" />
         </div>
 
         <div className="flex-1 min-w-0">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-accent-text">
             Genre
           </span>
-          <h1 className="text-3xl font-black text-white tracking-tight truncate mt-1">
+          <h1 className="text-3xl font-black text-foreground tracking-tight truncate mt-1">
             {selectedGenre}
           </h1>
 
-          <p className="text-xs text-slate-400 mt-2">
+          <p className="text-xs text-foreground-muted mt-2">
             {genreTracks.length} {genreTracks.length === 1 ? 'track' : 'tracks'} • {formatTime(totalDuration)}
           </p>
 
           <div className="flex items-center gap-3 mt-4">
             <button
               onClick={() => handlePlayGenre(false)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-lg shadow-indigo-600/30"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-accent hover:bg-accent-hover text-accent-fg transition shadow-lg shadow-accent-shadow"
             >
-              <Play className="w-3.5 h-3.5 fill-white" />
+              <Play className="w-3.5 h-3.5 fill-current" />
               <span>Play Genre</span>
             </button>
 
             <button
               onClick={() => handlePlayGenre(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-200 transition"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-surface-hover hover:bg-surface-elevated text-foreground-secondary border border-border-subtle transition"
             >
-              <Shuffle className="w-3.5 h-3.5 text-indigo-400" />
+              <Shuffle className="w-3.5 h-3.5 text-accent-text" />
               <span>Shuffle</span>
             </button>
           </div>
@@ -89,7 +92,7 @@ export const GenreDetailView: React.FC = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto pr-1">
-        <div className="grid grid-cols-[40px_1fr_1fr_1fr_60px_40px] items-center px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-white/5 sticky top-0 bg-[#0b0d14]/95 backdrop-blur z-10">
+        <div className="grid grid-cols-[40px_1fr_1fr_1fr_60px_40px] items-center px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-foreground-subtle border-b border-border-subtle sticky top-0 bg-app/95 backdrop-blur z-10">
           <span>#</span>
           <span>Title</span>
           <span>Artist</span>
@@ -115,29 +118,29 @@ export const GenreDetailView: React.FC = () => {
                 }}
                 className={`group grid grid-cols-[40px_1fr_1fr_1fr_60px_40px] items-center px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
                   isCurrent
-                    ? 'bg-indigo-600/15 text-indigo-300 border border-indigo-500/20'
-                    : 'text-slate-300 hover:bg-white/5 border border-transparent'
+                    ? 'bg-accent-subtle text-accent-text border border-accent-border font-medium'
+                    : 'text-foreground-secondary hover:bg-surface-hover border border-transparent'
                 }`}
               >
                 <div className="flex items-center">
-                  <span className={`text-[11px] font-mono group-hover:hidden ${isCurrent ? 'text-indigo-400 font-bold' : 'text-slate-500'}`}>
+                  <span className={`text-[11px] font-mono group-hover:hidden ${isCurrent ? 'text-accent-text font-bold' : 'text-foreground-subtle'}`}>
                     {isCurrent && isPlaying ? '▶' : idx + 1}
                   </span>
                   <button
                     onClick={() => playTrack(track, genreTracks)}
-                    className="hidden group-hover:flex w-5 h-5 rounded items-center justify-center text-indigo-400 transition"
+                    className="hidden group-hover:flex w-5 h-5 rounded items-center justify-center text-accent-text hover:text-accent transition"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
                   </button>
                 </div>
 
-                <span className={`font-semibold truncate pr-3 ${isCurrent ? 'text-white' : 'text-slate-200'}`}>
+                <span className={`font-semibold truncate pr-3 ${isCurrent ? 'text-accent-text font-bold' : 'text-foreground'}`}>
                   {track.title}
                 </span>
 
-                <span className="truncate text-slate-400 pr-3">{track.artist}</span>
-                <span className="truncate text-slate-500 pr-3">{track.album}</span>
-                <span className="text-right font-mono text-slate-400">{formatTime(track.duration)}</span>
+                <span className="truncate text-foreground-muted pr-3">{track.artist}</span>
+                <span className="truncate text-foreground-subtle pr-3">{track.album}</span>
+                <span className="text-right font-mono text-foreground-muted">{formatTime(track.duration)}</span>
 
                 <div className="flex items-center justify-end">
                   <button
@@ -145,7 +148,7 @@ export const GenreDetailView: React.FC = () => {
                       e.stopPropagation();
                       toggleFavorite(track.id);
                     }}
-                    className="p-1 text-slate-500 hover:text-red-400 transition"
+                    className="p-1 text-foreground-subtle hover:text-red-400 transition"
                   >
                     <Heart
                       className={`w-3.5 h-3.5 ${

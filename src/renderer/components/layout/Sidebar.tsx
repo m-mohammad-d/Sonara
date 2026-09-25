@@ -30,8 +30,8 @@ export const Sidebar: React.FC = () => {
         onClick={() => navigate(view)}
         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${
           isActive
-            ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+            ? 'bg-accent text-accent-fg shadow-sm shadow-accent-shadow'
+            : 'text-foreground-muted hover:text-foreground hover:bg-surface-hover'
         }`}
       >
         <div className="flex items-center gap-3 truncate">
@@ -41,7 +41,7 @@ export const Sidebar: React.FC = () => {
         {count !== undefined && count > 0 && (
           <span
             className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-              isActive ? 'bg-indigo-700 text-white' : 'bg-white/5 text-slate-400'
+              isActive ? 'bg-accent-active text-accent-fg' : 'bg-surface-hover text-foreground-muted'
             }`}
           >
             {count}
@@ -52,11 +52,11 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-56 h-full bg-[#0d101a] border-r border-white/5 flex flex-col justify-between select-none">
+    <aside className="w-56 h-full bg-sidebar border-r border-border-subtle flex flex-col justify-between select-none">
       <div className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-6">
         {/* Main Library Section */}
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 block mb-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-foreground-subtle px-3 block mb-2">
             Library
           </span>
           <div className="flex flex-col gap-1">
@@ -69,7 +69,7 @@ export const Sidebar: React.FC = () => {
 
         {/* Collections */}
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 block mb-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-foreground-subtle px-3 block mb-2">
             Collections
           </span>
           <div className="flex flex-col gap-1">
@@ -81,12 +81,12 @@ export const Sidebar: React.FC = () => {
         {/* Playlists */}
         <div className="flex-1 flex flex-col">
           <div className="flex items-center justify-between px-3 mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-foreground-subtle">
               Playlists
             </span>
             <button
               onClick={() => toggleNewPlaylistModal(true)}
-              className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-md transition"
+              className="p-1 text-foreground-muted hover:text-foreground hover:bg-surface-hover rounded-md transition"
               title="Create New Playlist"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -95,7 +95,7 @@ export const Sidebar: React.FC = () => {
 
           <div className="flex flex-col gap-1 overflow-y-auto max-h-48 pr-1">
             {playlistItems.length === 0 ? (
-              <span className="text-[11px] text-slate-600 px-3 italic">
+              <span className="text-[11px] text-foreground-subtle px-3 italic">
                 No playlists yet
               </span>
             ) : (
@@ -107,15 +107,15 @@ export const Sidebar: React.FC = () => {
                     onClick={() => navigate('playlist-detail', { selectedPlaylistId: pl.id })}
                     className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-medium transition text-left truncate ${
                       isActive
-                        ? 'bg-indigo-600/30 text-indigo-300 font-semibold border border-indigo-500/30'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                        ? 'bg-accent-subtle text-accent-text font-semibold border border-accent-border'
+                        : 'text-foreground-muted hover:text-foreground hover:bg-surface-hover'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 truncate">
                       <ListMusic className="w-3.5 h-3.5 shrink-0" />
                       <span className="truncate">{pl.name}</span>
                     </div>
-                    <span className="text-[10px] text-slate-500 shrink-0">
+                    <span className="text-[10px] text-foreground-subtle shrink-0">
                       {pl.trackIds.length}
                     </span>
                   </button>
@@ -127,13 +127,13 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Bottom Footer Section */}
-      <div className="p-3 border-t border-white/5 flex flex-col gap-2">
+      <div className="p-3 border-t border-border-subtle flex flex-col gap-2">
         <button
           onClick={() => navigate('settings')}
           className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition ${
             currentView === 'settings'
-              ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+              ? 'bg-accent text-accent-fg shadow-sm shadow-accent-shadow'
+              : 'text-foreground-muted hover:text-foreground hover:bg-surface-hover'
           }`}
         >
           <Settings className="w-4 h-4" />
@@ -141,7 +141,7 @@ export const Sidebar: React.FC = () => {
         </button>
 
         {folders.length > 0 && (
-          <div className="text-[10px] text-slate-500 px-3 truncate">
+          <div className="text-[10px] text-foreground-subtle px-3 truncate">
             {folders.length} folder{folders.length > 1 ? 's' : ''} monitored
           </div>
         )}

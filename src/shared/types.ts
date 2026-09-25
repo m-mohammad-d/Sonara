@@ -68,7 +68,25 @@ export interface EqualizerSettings {
   preamp: number; // -12dB to +12dB
 }
 
-export type ThemeName = "dark" | "midnight" | "oled";
+export type ThemeMode = "dark" | "light";
+export type AccentColor =
+  | "blue"
+  | "sky"
+  | "cyan"
+  | "teal"
+  | "green"
+  | "emerald"
+  | "lime"
+  | "yellow"
+  | "amber"
+  | "orange"
+  | "red"
+  | "rose"
+  | "pink"
+  | "fuchsia"
+  | "purple"
+  | "violet";
+export type ThemeName = ThemeMode;
 export type VisualizerMode = "spectrum" | "waveform" | "bars" | "circular";
 export type RepeatMode = "off" | "all" | "one";
 
@@ -82,7 +100,9 @@ export interface UserSettings {
   playbackRate: number;
   lastTrackId?: string;
   lastPosition?: number;
-  theme: ThemeName;
+  themeMode: ThemeMode;
+  accentColor: AccentColor;
+  theme?: string;
   visualizerMode: VisualizerMode;
   equalizer: EqualizerSettings;
 }
@@ -95,5 +115,8 @@ export interface LibraryData {
   folders: string[];
 }
 
-export type MediaCommand = "play-pause" | "next-track" | "previous-track" | "stop";
-
+export type MediaCommand =
+  | "play-pause"
+  | "next-track"
+  | "previous-track"
+  | "stop";

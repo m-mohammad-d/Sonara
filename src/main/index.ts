@@ -100,7 +100,7 @@ function createMainWindow(): void {
     minHeight: 640,
     frame: false,
     titleBarStyle: 'hidden',
-    backgroundColor: '#0d0f17',
+    backgroundColor: store?.getSettings()?.themeMode === 'light' ? '#f4f5f8' : '#0b0d14',
     icon: appIcon,
     show: false,
     webPreferences: {

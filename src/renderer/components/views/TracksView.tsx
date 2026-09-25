@@ -48,7 +48,7 @@ export const TracksView: React.FC = () => {
   const renderSortIndicator = (field: SortField) => {
     if (sortField !== field) return null;
     return (
-      <span className="ml-1 text-indigo-400 font-bold">
+      <span className="ml-1 text-accent-text font-bold">
         {sortOrder === 'asc' ? '↑' : '↓'}
       </span>
     );
@@ -81,10 +81,10 @@ export const TracksView: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden p-6 select-none">
       {/* Top Header & Actions */}
-      <div className="flex items-end justify-between mb-6 pb-4 border-b border-white/5">
+      <div className="flex items-end justify-between mb-6 pb-4 border-b border-border-subtle">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight">All Songs</h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <h1 className="text-2xl font-black text-foreground tracking-tight">All Songs</h1>
+          <p className="text-xs text-foreground-muted mt-1">
             {tracks.length} {tracks.length === 1 ? 'song' : 'songs'} • {formatTime(totalDuration)} total duration
           </p>
         </div>
@@ -92,17 +92,17 @@ export const TracksView: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handlePlayAll(false)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-sm shadow-indigo-500/30"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-accent hover:bg-accent-hover text-accent-fg transition shadow-sm shadow-accent-shadow"
           >
-            <Play className="w-3.5 h-3.5 fill-white" />
+            <Play className="w-3.5 h-3.5 fill-current" />
             <span>Play All</span>
           </button>
 
           <button
             onClick={() => handlePlayAll(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-200 transition"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-surface-hover hover:bg-surface-elevated text-foreground-secondary border border-border-subtle transition"
           >
-            <Shuffle className="w-3.5 h-3.5 text-indigo-400" />
+            <Shuffle className="w-3.5 h-3.5 text-accent-text" />
             <span>Shuffle</span>
           </button>
         </div>
@@ -111,39 +111,39 @@ export const TracksView: React.FC = () => {
       {/* Tracks Table */}
       <div className="flex-1 overflow-y-auto pr-1">
         {/* Table Header */}
-        <div className="grid grid-cols-[36px_1fr_1fr_1fr_72px_88px_40px] items-center px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-white/5 sticky top-0 bg-[#0b0d14]/95 backdrop-blur z-10">
+        <div className="grid grid-cols-[36px_1fr_1fr_1fr_72px_88px_40px] items-center px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-foreground-subtle border-b border-border-subtle sticky top-0 bg-app/95 backdrop-blur z-10">
           <span>#</span>
           <button
             onClick={() => setSort('title')}
-            className="flex items-center text-left hover:text-slate-300"
+            className="flex items-center text-left hover:text-foreground"
           >
             <span>Title</span>
             {renderSortIndicator('title')}
           </button>
           <button
             onClick={() => setSort('artist')}
-            className="flex items-center text-left hover:text-slate-300"
+            className="flex items-center text-left hover:text-foreground"
           >
             <span>Artist</span>
             {renderSortIndicator('artist')}
           </button>
           <button
             onClick={() => setSort('album')}
-            className="flex items-center text-left hover:text-slate-300"
+            className="flex items-center text-left hover:text-foreground"
           >
             <span>Album</span>
             {renderSortIndicator('album')}
           </button>
           <button
             onClick={() => setSort('duration')}
-            className="flex items-center justify-end hover:text-slate-300"
+            className="flex items-center justify-end hover:text-foreground"
           >
             <Clock className="w-3.5 h-3.5" />
             {renderSortIndicator('duration')}
           </button>
           <button
             onClick={() => setSort('dateAdded')}
-            className="flex items-center justify-end hover:text-slate-300"
+            className="flex items-center justify-end hover:text-foreground"
           >
             <span>Added</span>
             {renderSortIndicator('dateAdded')}
@@ -167,18 +167,18 @@ export const TracksView: React.FC = () => {
                 }}
                 className={`group grid grid-cols-[36px_1fr_1fr_1fr_72px_88px_40px] items-center px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
                   isCurrent
-                    ? 'bg-indigo-600/15 text-indigo-300 border border-indigo-500/20'
-                    : 'text-slate-300 hover:bg-white/5 border border-transparent'
+                    ? 'bg-accent-subtle text-accent-text border border-accent-border font-medium'
+                    : 'text-foreground-secondary hover:bg-surface-hover border border-transparent'
                 }`}
               >
                 {/* Index / Play Button */}
                 <div className="flex items-center">
-                  <span className={`text-[11px] font-mono group-hover:hidden ${isCurrent ? 'text-indigo-400 font-bold' : 'text-slate-500'}`}>
+                  <span className={`text-[11px] font-mono group-hover:hidden ${isCurrent ? 'text-accent-text font-bold' : 'text-foreground-subtle'}`}>
                     {isCurrent && isPlaying ? '▶' : idx + 1}
                   </span>
                   <button
                     onClick={() => playTrack(track, tracks)}
-                    className="hidden group-hover:flex w-5 h-5 rounded items-center justify-center text-indigo-400 hover:text-indigo-300 transition"
+                    className="hidden group-hover:flex w-5 h-5 rounded items-center justify-center text-accent-text hover:text-accent transition"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
                   </button>
@@ -186,7 +186,7 @@ export const TracksView: React.FC = () => {
 
                 {/* Title & Artwork */}
                 <div className="flex items-center gap-2.5 min-w-0 pr-3">
-                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 shrink-0 flex items-center justify-center border border-white/5">
+                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-surface-input shrink-0 flex items-center justify-center border border-border-subtle">
                     {track.artworkUrl ? (
                       <img
                         src={track.artworkUrl}
@@ -194,15 +194,15 @@ export const TracksView: React.FC = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <Music2 className="w-4 h-4 text-slate-600" />
+                      <Music2 className="w-4 h-4 text-foreground-subtle" />
                     )}
                   </div>
                   <div className="truncate">
-                    <p className={`font-semibold truncate ${isCurrent ? 'text-white font-bold' : 'text-slate-200'}`}>
+                    <p className={`font-semibold truncate ${isCurrent ? 'text-accent-text font-bold' : 'text-foreground'}`}>
                       {track.title}
                     </p>
                     {track.format && (
-                      <span className="text-[9px] uppercase px-1 py-0.2 rounded bg-white/5 text-slate-500">
+                      <span className="text-[9px] uppercase px-1 py-0.2 rounded bg-surface-hover text-foreground-subtle">
                         {track.format}
                       </span>
                     )}
@@ -210,22 +210,22 @@ export const TracksView: React.FC = () => {
                 </div>
 
                 {/* Artist */}
-                <span className="truncate text-slate-400 pr-3 group-hover:text-slate-300">
+                <span className="truncate text-foreground-muted pr-3 group-hover:text-foreground">
                   {track.artist}
                 </span>
 
                 {/* Album */}
-                <span className="truncate text-slate-500 pr-3 group-hover:text-slate-400">
+                <span className="truncate text-foreground-subtle pr-3 group-hover:text-foreground-muted">
                   {track.album}
                 </span>
 
                 {/* Duration */}
-                <span className="text-right font-mono text-slate-400">
+                <span className="text-right font-mono text-foreground-muted">
                   {formatTime(track.duration)}
                 </span>
 
                 {/* Date Added */}
-                <span className="text-right text-[11px] text-slate-500">
+                <span className="text-right text-[11px] text-foreground-subtle">
                   {formatDate(track.dateAdded)}
                 </span>
 
@@ -236,7 +236,7 @@ export const TracksView: React.FC = () => {
                       e.stopPropagation();
                       toggleFavorite(track.id);
                     }}
-                    className="p-1 text-slate-500 hover:text-red-400 transition"
+                    className="p-1 text-foreground-subtle hover:text-red-400 transition"
                   >
                     <Heart
                       className={`w-3.5 h-3.5 ${

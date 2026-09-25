@@ -41,9 +41,9 @@ export const GenresView: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden p-6 select-none">
-      <div className="mb-6 pb-4 border-b border-white/5">
-        <h1 className="text-2xl font-black text-white tracking-tight">Genres</h1>
-        <p className="text-xs text-slate-400 mt-1">
+      <div className="mb-6 pb-4 border-b border-border-subtle">
+        <h1 className="text-2xl font-black text-foreground tracking-tight">Genres</h1>
+        <p className="text-xs text-foreground-muted mt-1">
           {filteredGenres.length} {filteredGenres.length === 1 ? 'genre' : 'genres'}
         </p>
       </div>
@@ -66,7 +66,7 @@ export const GenresView: React.FC = () => {
 
                 <div>
                   <h3 className="text-base font-bold text-white truncate">{genre}</h3>
-                  <p className="text-xs text-slate-300 mt-0.5">
+                  <p className="text-xs text-slate-200 mt-0.5">
                     {count} {count === 1 ? 'song' : 'songs'}
                   </p>
                 </div>

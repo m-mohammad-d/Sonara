@@ -73,12 +73,12 @@ export const PlayerBar: React.FC = () => {
   };
 
   return (
-    <footer className="h-20 w-full bg-[#090b10] border-t border-white/5 px-4 flex items-center justify-between select-none z-40 relative">
+    <footer className="h-20 w-full bg-panel border-t border-border-subtle px-4 flex items-center justify-between select-none z-40 relative">
       {/* Left: Track Information */}
       <div className="flex items-center gap-3 w-1/4 min-w-[220px]">
         {currentTrack ? (
           <>
-            <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-800 shrink-0 border border-white/10 group shadow-md">
+            <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-elevated shrink-0 border border-border group shadow-md">
               {currentTrack.artworkUrl ? (
                 <img
                   src={currentTrack.artworkUrl}
@@ -87,13 +87,13 @@ export const PlayerBar: React.FC = () => {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <Music2 className="w-6 h-6 text-indigo-400/60" />
+                  <Music2 className="w-6 h-6 text-accent-text/60" />
                 </div>
               )}
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white truncate hover:underline cursor-pointer">
+              <p className="text-xs font-bold text-foreground truncate hover:underline cursor-pointer">
                 {currentTrack.title}
               </p>
               <p
@@ -102,7 +102,7 @@ export const PlayerBar: React.FC = () => {
                     selectedArtistId: currentTrack.artist.toLowerCase(),
                   })
                 }
-                className="text-[11px] text-slate-400 truncate hover:text-indigo-300 cursor-pointer transition"
+                className="text-[11px] text-foreground-muted truncate hover:text-accent-text cursor-pointer transition"
               >
                 {currentTrack.artist}
               </p>
@@ -110,20 +110,20 @@ export const PlayerBar: React.FC = () => {
 
             <button
               onClick={() => toggleFavorite(currentTrack.id)}
-              className="p-2 text-slate-400 hover:text-red-400 transition"
+              className="p-2 text-foreground-muted hover:text-red-400 transition"
               title={favorited ? 'Remove from Favorites' : 'Add to Favorites'}
             >
               <Heart
                 className={`w-4 h-4 ${
-                  favorited ? 'text-red-400 fill-red-400' : 'text-slate-400'
+                  favorited ? 'text-red-400 fill-red-400' : 'text-foreground-muted'
                 }`}
               />
             </button>
           </>
         ) : (
-          <div className="flex items-center gap-3 text-slate-600">
-            <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center">
-              <Music2 className="w-5 h-5 text-slate-600" />
+          <div className="flex items-center gap-3 text-foreground-subtle">
+            <div className="w-12 h-12 rounded-xl bg-surface-input border border-border-subtle flex items-center justify-center">
+              <Music2 className="w-5 h-5 text-foreground-subtle" />
             </div>
             <div className="text-xs">No track selected</div>
           </div>
@@ -137,7 +137,7 @@ export const PlayerBar: React.FC = () => {
           <button
             onClick={toggleShuffle}
             className={`p-1.5 rounded-lg transition ${
-              shuffle ? 'text-indigo-400 hover:text-indigo-300' : 'text-slate-500 hover:text-slate-300'
+              shuffle ? 'text-accent-text hover:text-accent' : 'text-foreground-subtle hover:text-foreground'
             }`}
             title={`Shuffle: ${shuffle ? 'On' : 'Off'}`}
           >
@@ -146,7 +146,7 @@ export const PlayerBar: React.FC = () => {
 
           <button
             onClick={prevTrack}
-            className="p-1.5 text-slate-300 hover:text-white transition active:scale-95"
+            className="p-1.5 text-foreground-secondary hover:text-foreground transition active:scale-95"
             title="Previous Track"
           >
             <SkipBack className="w-4 h-4" />
@@ -154,7 +154,7 @@ export const PlayerBar: React.FC = () => {
 
           <button
             onClick={togglePlay}
-            className="w-9 h-9 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-lg shadow-indigo-600/40 active:scale-90"
+            className="w-9 h-9 rounded-full bg-accent hover:bg-accent-hover text-accent-fg flex items-center justify-center transition shadow-lg shadow-accent-shadow active:scale-90"
             title={isPlaying ? 'Pause' : 'Play'}
           >
             {isPlaying ? (
@@ -166,7 +166,7 @@ export const PlayerBar: React.FC = () => {
 
           <button
             onClick={nextTrack}
-            className="p-1.5 text-slate-300 hover:text-white transition active:scale-95"
+            className="p-1.5 text-foreground-secondary hover:text-foreground transition active:scale-95"
             title="Next Track"
           >
             <SkipForward className="w-4 h-4" />
@@ -176,8 +176,8 @@ export const PlayerBar: React.FC = () => {
             onClick={cycleRepeat}
             className={`p-1.5 rounded-lg transition ${
               repeatMode !== 'off'
-                ? 'text-indigo-400 hover:text-indigo-300'
-                : 'text-slate-500 hover:text-slate-300'
+                ? 'text-accent-text hover:text-accent'
+                : 'text-foreground-subtle hover:text-foreground'
             }`}
             title={`Repeat: ${repeatMode}`}
           >
@@ -191,7 +191,7 @@ export const PlayerBar: React.FC = () => {
 
         {/* Progress Bar & Timestamps */}
         <div className="w-full flex items-center gap-3">
-          <span className="text-[11px] font-mono text-slate-400 w-10 text-right">
+          <span className="text-[11px] font-mono text-foreground-muted w-10 text-right">
             {formatTime(currentTime)}
           </span>
 
@@ -205,7 +205,7 @@ export const PlayerBar: React.FC = () => {
             className="flex-1"
           />
 
-          <span className="text-[11px] font-mono text-slate-400 w-10 text-left">
+          <span className="text-[11px] font-mono text-foreground-muted w-10 text-left">
             {formatTime(duration)}
           </span>
         </div>
@@ -216,7 +216,7 @@ export const PlayerBar: React.FC = () => {
         {/* Playback speed indicator */}
         <button
           onClick={cyclePlaybackRate}
-          className="text-[11px] font-mono text-slate-400 hover:text-white px-2 py-1 rounded bg-white/5 transition"
+          className="text-[11px] font-mono text-foreground-muted hover:text-foreground px-2 py-1 rounded bg-surface-hover border border-border-subtle transition"
           title="Playback Speed"
         >
           {playbackRate}x
@@ -227,7 +227,7 @@ export const PlayerBar: React.FC = () => {
           <button
             onClick={() => setShowVisualizerMenu(!showVisualizerMenu)}
             className={`p-1.5 rounded-lg transition ${
-              visualizerMode ? 'text-indigo-400 hover:text-indigo-300' : 'text-slate-400 hover:text-white'
+              visualizerMode ? 'text-accent-text hover:text-accent' : 'text-foreground-muted hover:text-foreground'
             }`}
             title="Visualizer Mode"
           >
@@ -235,7 +235,7 @@ export const PlayerBar: React.FC = () => {
           </button>
 
           {showVisualizerMenu && (
-            <div className="absolute right-0 bottom-full mb-2 w-32 rounded-xl glass-panel p-1 border border-white/10 shadow-2xl flex flex-col gap-0.5 text-xs">
+            <div className="absolute right-0 bottom-full mb-2 w-32 rounded-xl glass-panel p-1 border border-border shadow-2xl flex flex-col gap-0.5 text-xs">
               {(['spectrum', 'waveform', 'bars', 'circular'] as const).map((mode) => (
                 <button
                   key={mode}
@@ -245,8 +245,8 @@ export const PlayerBar: React.FC = () => {
                   }}
                   className={`px-3 py-1.5 rounded-lg text-left capitalize transition ${
                     visualizerMode === mode
-                      ? 'bg-indigo-600 text-white font-medium'
-                      : 'text-slate-300 hover:bg-white/10'
+                      ? 'bg-accent text-accent-fg font-medium'
+                      : 'text-foreground-secondary hover:bg-surface-hover hover:text-foreground'
                   }`}
                 >
                   {mode}
@@ -261,14 +261,14 @@ export const PlayerBar: React.FC = () => {
           onClick={() => toggleEqualizer(true)}
           className={`relative p-1.5 rounded-lg transition ${
             equalizer.enabled
-              ? 'text-indigo-400 hover:text-indigo-300'
-              : 'text-slate-400 hover:text-white'
+              ? 'text-accent-text hover:text-accent'
+              : 'text-foreground-muted hover:text-foreground'
           }`}
           title="Equalizer"
         >
           <Sliders className="w-4 h-4" />
           {equalizer.enabled && (
-            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-indigo-400" />
+            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-accent" />
           )}
         </button>
 
@@ -277,14 +277,14 @@ export const PlayerBar: React.FC = () => {
           onClick={() => toggleQueue()}
           className={`relative p-1.5 rounded-lg transition ${
             isQueueOpen
-              ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/30'
-              : 'text-slate-400 hover:text-white hover:bg-white/5'
+              ? 'bg-accent-subtle text-accent-text border border-accent-border'
+              : 'text-foreground-muted hover:text-foreground hover:bg-surface-hover'
           }`}
           title="Playback Queue"
         >
           <ListMusic className="w-4 h-4" />
           {queue.length > 0 && (
-            <span className="absolute -top-1 -right-1 px-1 py-0.2 rounded-full bg-indigo-600 text-[9px] font-bold text-white leading-tight">
+            <span className="absolute -top-1 -right-1 px-1 py-0.2 rounded-full bg-accent text-[9px] font-bold text-accent-fg leading-tight">
               {queue.length}
             </span>
           )}
@@ -294,7 +294,7 @@ export const PlayerBar: React.FC = () => {
         <div className="flex items-center gap-2 w-28">
           <button
             onClick={toggleMute}
-            className="text-slate-400 hover:text-white transition shrink-0"
+            className="text-foreground-muted hover:text-foreground transition shrink-0"
             title={isMuted ? 'Unmute' : 'Mute'}
           >
             {isMuted || volume === 0 ? (

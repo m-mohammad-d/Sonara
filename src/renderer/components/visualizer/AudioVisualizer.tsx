@@ -15,6 +15,8 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const visualizerMode = useSettingsStore((s) => s.visualizerMode);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const accentColor = useSettingsStore((s) => s.accentColor);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -30,6 +32,13 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
     const freqData = new Uint8Array(bufferLength);
     const timeData = new Uint8Array(bufferLength);
 
+    const computed = window.getComputedStyle(document.documentElement);
+    const accent = computed.getPropertyValue('--color-accent').trim() || '#3b82f6';
+    const accentHover = computed.getPropertyValue('--color-accent-hover').trim() || '#60a5fa';
+    const accentText = computed.getPropertyValue('--color-accent-text').trim() || '#93c5fd';
+    const accentSubtle = computed.getPropertyValue('--color-accent-subtle').trim() || 'rgba(59, 130, 246, 0.15)';
+    const idleStroke = themeMode === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+
     const render = () => {
       if (!canvas) return;
       const width = canvas.width;
@@ -38,8 +47,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
       ctx.clearRect(0, 0, width, h);
 
       if (!isPlaying) {
-        // Draw subtle idle line
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.strokeStyle = idleStroke;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(0, h / 2);
@@ -52,9 +60,9 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
         engine.getTimeDomainData(timeData);
 
         const gradient = ctx.createLinearGradient(0, 0, width, 0);
-        gradient.addColorStop(0, '#6366f1');
-        gradient.addColorStop(0.5, '#a855f7');
-        gradient.addColorStop(1, '#06b6d4');
+        gradient.addColorStop(0, accent);
+        gradient.addColorStop(0.5, accentHover);
+        gradient.addColorStop(1, accentText);
 
         ctx.lineWidth = 2;
         ctx.strokeStyle = gradient;
@@ -91,8 +99,8 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
           const barHeight = Math.max(3, percent * (h - 6));
 
           const gradient = ctx.createLinearGradient(0, h, 0, h - barHeight);
-          gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
-          gradient.addColorStop(1, '#818cf8');
+          gradient.addColorStop(0, accentSubtle);
+          gradient.addColorStop(1, accent);
 
           ctx.fillStyle = gradient;
           const x = i * (barWidth + gap);
@@ -127,7 +135,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
           }
         }
         ctx.closePath();
-        ctx.strokeStyle = '#a855f7';
+        ctx.strokeStyle = accent;
         ctx.lineWidth = 1.5;
         ctx.stroke();
       } else {
@@ -135,9 +143,9 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
         engine.getFrequencyData(freqData);
 
         const gradient = ctx.createLinearGradient(0, h, 0, 0);
-        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.05)');
-        gradient.addColorStop(0.5, 'rgba(129, 140, 248, 0.35)');
-        gradient.addColorStop(1, 'rgba(168, 85, 247, 0.8)');
+        gradient.addColorStop(0, accentSubtle);
+        gradient.addColorStop(0.7, accent);
+        gradient.addColorStop(1, accentHover);
 
         ctx.beginPath();
         ctx.moveTo(0, h);
@@ -160,7 +168,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
         ctx.fill();
 
         // Top line
-        ctx.strokeStyle = '#818cf8';
+        ctx.strokeStyle = accentHover;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         x = 0;
@@ -202,7 +210,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', handleResize);
     };
-  }, [isPlaying, visualizerMode, height]);
+  }, [isPlaying, visualizerMode, height, themeMode, accentColor]);
 
   return (
     <div className={`relative overflow-hidden ${className}`} style={{ height }}>

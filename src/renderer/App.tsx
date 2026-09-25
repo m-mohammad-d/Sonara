@@ -74,7 +74,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#0b0d14] text-slate-100 font-sans">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-app text-foreground font-sans">
       {/* TitleBar */}
       <TitleBar />
 
@@ -82,7 +82,7 @@ export const App: React.FC = () => {
       <div className="flex-1 flex overflow-hidden relative">
         <Sidebar />
 
-        <main className="flex-1 overflow-hidden flex flex-col bg-gradient-to-b from-[#0e121d] to-[#0b0d14]">
+        <main className="flex-1 overflow-hidden flex flex-col bg-app-main">
           {/* Error Banner */}
           {errorMessage && (
             <div className="mx-6 mt-4 p-3 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-between text-xs text-red-200 animate-in fade-in">
@@ -92,7 +92,7 @@ export const App: React.FC = () => {
               </div>
               <button
                 onClick={clearError}
-                className="p-1 hover:text-white transition"
+                className="p-1 hover:text-foreground transition"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

@@ -12,15 +12,17 @@ export const ArtistDetailView: React.FC = () => {
   const { currentTrack, isPlaying, playTrack } = usePlayerStore();
   const { isFavorite, toggleFavorite } = usePlaylistStore();
 
-  const artist = artists.find((a) => a.id === selectedArtistId);
+  const artist = artists.find(
+    (a) => a.name.toLowerCase() === selectedArtistId?.toLowerCase()
+  );
 
   if (!artist) {
     return (
-      <div className="p-8 text-center text-slate-400">
+      <div className="p-8 text-center text-foreground-muted">
         <p>Artist not found.</p>
         <button
           onClick={goBack}
-          className="mt-4 px-4 py-2 rounded-xl bg-white/10 text-xs font-semibold text-white"
+          className="mt-4 px-4 py-2 rounded-xl bg-surface-hover hover:bg-surface-elevated text-xs font-semibold text-foreground transition"
         >
           Go Back
         </button>
@@ -28,15 +30,15 @@ export const ArtistDetailView: React.FC = () => {
     );
   }
 
-  // Get albums by this artist
-  const artistAlbums = albums.filter((alb) =>
-    alb.artist.toLowerCase() === artist.name.toLowerCase()
+  // All tracks by this artist
+  const artistTracks = Object.values(tracks).filter(
+    (t) => t.artist.toLowerCase() === artist.name.toLowerCase()
   );
 
-  // Get all tracks by this artist
-  const artistTracks = Object.values(tracks)
-    .filter((tr) => tr.artist.toLowerCase() === artist.name.toLowerCase())
-    .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
+  // All albums by this artist
+  const artistAlbums = albums.filter(
+    (a) => a.artist.toLowerCase() === artist.name.toLowerCase()
+  );
 
   const handlePlayArtist = (shuffle = false) => {
     if (artistTracks.length === 0) return;
@@ -50,10 +52,11 @@ export const ArtistDetailView: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden p-6 select-none">
+      {/* Top back button */}
       <div className="mb-4">
         <button
           onClick={goBack}
-          className="flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white transition"
+          className="flex items-center gap-2 text-xs font-medium text-foreground-muted hover:text-foreground transition"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Artists</span>
@@ -61,8 +64,8 @@ export const ArtistDetailView: React.FC = () => {
       </div>
 
       {/* Artist Banner */}
-      <div className="flex items-center gap-6 mb-8 pb-6 border-b border-white/5">
-        <div className="w-36 h-36 rounded-full overflow-hidden bg-slate-900 shrink-0 shadow-2xl border border-white/10 flex items-center justify-center">
+      <div className="flex items-center gap-6 mb-8 pb-6 border-b border-border-subtle">
+        <div className="w-36 h-36 rounded-full overflow-hidden bg-surface-input shrink-0 shadow-2xl border border-border flex items-center justify-center">
           {artist.artworkUrl ? (
             <img
               src={artist.artworkUrl}
@@ -70,36 +73,36 @@ export const ArtistDetailView: React.FC = () => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <Users className="w-16 h-16 text-slate-700" />
+            <Users className="w-16 h-16 text-foreground-subtle" />
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-accent-text">
             Artist
           </span>
-          <h1 className="text-3xl font-black text-white tracking-tight truncate mt-1">
+          <h1 className="text-3xl font-black text-foreground tracking-tight truncate mt-1">
             {artist.name}
           </h1>
 
-          <p className="text-sm text-slate-400 mt-2">
+          <p className="text-sm text-foreground-muted mt-2">
             {artistAlbums.length} {artistAlbums.length === 1 ? 'album' : 'albums'} • {artistTracks.length} tracks
           </p>
 
           <div className="flex items-center gap-3 mt-5">
             <button
               onClick={() => handlePlayArtist(false)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-lg shadow-indigo-600/30"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-accent hover:bg-accent-hover text-accent-fg transition shadow-lg shadow-accent-shadow"
             >
-              <Play className="w-3.5 h-3.5 fill-white" />
+              <Play className="w-3.5 h-3.5 fill-current" />
               <span>Play All</span>
             </button>
 
             <button
               onClick={() => handlePlayArtist(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-200 transition"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-surface-hover hover:bg-surface-elevated text-foreground-secondary border border-border-subtle transition"
             >
-              <Shuffle className="w-3.5 h-3.5 text-indigo-400" />
+              <Shuffle className="w-3.5 h-3.5 text-accent-text" />
               <span>Shuffle</span>
             </button>
           </div>
@@ -110,7 +113,7 @@ export const ArtistDetailView: React.FC = () => {
         {/* Albums Row */}
         {artistAlbums.length > 0 && (
           <div>
-            <h2 className="text-base font-bold text-white mb-4">Albums</h2>
+            <h2 className="text-base font-bold text-foreground mb-4">Albums</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {artistAlbums.map((alb) => (
                 <div
@@ -118,7 +121,7 @@ export const ArtistDetailView: React.FC = () => {
                   onClick={() => navigate('album-detail', { selectedAlbumId: alb.id })}
                   className="group glass-card p-2.5 rounded-2xl cursor-pointer flex flex-col transition hover:-translate-y-1 duration-150"
                 >
-                  <div className="aspect-square w-full rounded-xl overflow-hidden bg-slate-900 mb-2.5 flex items-center justify-center">
+                  <div className="aspect-square w-full rounded-xl overflow-hidden bg-surface-input mb-2.5 flex items-center justify-center">
                     {alb.artworkUrl ? (
                       <img
                         src={alb.artworkUrl}
@@ -126,13 +129,13 @@ export const ArtistDetailView: React.FC = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <Disc3 className="w-8 h-8 text-slate-700" />
+                      <Disc3 className="w-8 h-8 text-foreground-subtle" />
                     )}
                   </div>
-                  <h4 className="text-xs font-bold text-slate-200 truncate group-hover:text-indigo-300">
+                  <h4 className="text-xs font-bold text-foreground-secondary truncate group-hover:text-accent-text">
                     {alb.name}
                   </h4>
-                  <span className="text-[10px] text-slate-500">
+                  <span className="text-[10px] text-foreground-subtle">
                     {alb.year || ''}
                   </span>
                 </div>
@@ -143,8 +146,8 @@ export const ArtistDetailView: React.FC = () => {
 
         {/* Songs List */}
         <div>
-          <h2 className="text-base font-bold text-white mb-4">Songs</h2>
-          <div className="grid grid-cols-[40px_1fr_1fr_60px_40px] items-center px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-white/5 sticky top-0 bg-[#0b0d14]/95 backdrop-blur z-10">
+          <h2 className="text-base font-bold text-foreground mb-4">Songs</h2>
+          <div className="grid grid-cols-[40px_1fr_1fr_60px_40px] items-center px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-foreground-subtle border-b border-border-subtle sticky top-0 bg-app/95 backdrop-blur z-10">
             <span>#</span>
             <span>Title</span>
             <span>Album</span>
@@ -169,31 +172,31 @@ export const ArtistDetailView: React.FC = () => {
                   }}
                   className={`group grid grid-cols-[40px_1fr_1fr_60px_40px] items-center px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
                     isCurrent
-                      ? 'bg-indigo-600/15 text-indigo-300 border border-indigo-500/20'
-                      : 'text-slate-300 hover:bg-white/5 border border-transparent'
+                      ? 'bg-accent-subtle text-accent-text border border-accent-border font-medium'
+                      : 'text-foreground-secondary hover:bg-surface-hover border border-transparent'
                   }`}
                 >
                   <div className="flex items-center">
-                    <span className={`text-[11px] font-mono group-hover:hidden ${isCurrent ? 'text-indigo-400 font-bold' : 'text-slate-500'}`}>
+                    <span className={`text-[11px] font-mono group-hover:hidden ${isCurrent ? 'text-accent-text font-bold' : 'text-foreground-subtle'}`}>
                       {isCurrent && isPlaying ? '▶' : idx + 1}
                     </span>
                     <button
                       onClick={() => playTrack(track, artistTracks)}
-                      className="hidden group-hover:flex w-5 h-5 rounded items-center justify-center text-indigo-400 transition"
+                      className="hidden group-hover:flex w-5 h-5 rounded items-center justify-center text-accent-text hover:text-accent transition"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
                     </button>
                   </div>
 
-                  <span className={`font-semibold truncate pr-3 ${isCurrent ? 'text-white' : 'text-slate-200'}`}>
+                  <span className={`font-semibold truncate pr-3 ${isCurrent ? 'text-accent-text font-bold' : 'text-foreground'}`}>
                     {track.title}
                   </span>
 
-                  <span className="truncate text-slate-400 pr-3">
+                  <span className="truncate text-foreground-muted pr-3">
                     {track.album}
                   </span>
 
-                  <span className="text-right font-mono text-slate-400">
+                  <span className="text-right font-mono text-foreground-muted">
                     {formatTime(track.duration)}
                   </span>
 
@@ -203,7 +206,7 @@ export const ArtistDetailView: React.FC = () => {
                         e.stopPropagation();
                         toggleFavorite(track.id);
                       }}
-                      className="p-1 text-slate-500 hover:text-red-400 transition"
+                      className="p-1 text-foreground-subtle hover:text-red-400 transition"
                     >
                       <Heart
                         className={`w-3.5 h-3.5 ${

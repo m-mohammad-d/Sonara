@@ -22,13 +22,13 @@ export const QueuePanel: React.FC = () => {
   const upcoming = queue.slice(queueIndex + 1);
 
   return (
-    <aside className="w-80 h-full glass-panel border-l border-white/10 flex flex-col z-40 bg-[#0d101a]/95 backdrop-blur-xl animate-in slide-in-from-right duration-200">
+    <aside className="w-80 h-full glass-panel border-l border-border flex flex-col z-40 bg-panel/95 backdrop-blur-xl animate-in slide-in-from-right duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-white/5">
+      <div className="flex items-center justify-between p-4 border-b border-border-subtle">
         <div className="flex items-center gap-2">
-          <Music2 className="w-5 h-5 text-indigo-400" />
-          <h2 className="font-bold text-sm tracking-tight">Playback Queue</h2>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-slate-300">
+          <Music2 className="w-5 h-5 text-accent-text" />
+          <h2 className="font-bold text-sm tracking-tight text-foreground">Playback Queue</h2>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-surface-hover text-foreground-secondary">
             {queue.length}
           </span>
         </div>
@@ -37,7 +37,7 @@ export const QueuePanel: React.FC = () => {
           {queue.length > 0 && (
             <button
               onClick={clearQueue}
-              className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-white/5 rounded-lg transition"
+              className="p-1.5 text-foreground-muted hover:text-red-400 hover:bg-surface-hover rounded-lg transition"
               title="Clear Queue"
             >
               <Trash2 className="w-4 h-4" />
@@ -45,7 +45,7 @@ export const QueuePanel: React.FC = () => {
           )}
           <button
             onClick={() => toggleQueue(false)}
-            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-lg transition"
+            className="p-1.5 text-foreground-muted hover:text-foreground hover:bg-surface-hover rounded-lg transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -56,11 +56,11 @@ export const QueuePanel: React.FC = () => {
         {/* Now Playing section */}
         {currentTrack && (
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 mb-2 block">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-accent-text mb-2 block">
               Now Playing
             </span>
-            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
-              <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-800 shrink-0 flex items-center justify-center">
+            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-accent-subtle border border-accent-border">
+              <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-elevated shrink-0 flex items-center justify-center border border-border">
                 {currentTrack.artworkUrl ? (
                   <img
                     src={currentTrack.artworkUrl}
@@ -68,14 +68,14 @@ export const QueuePanel: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <Music2 className="w-5 h-5 text-indigo-400/60" />
+                  <Music2 className="w-5 h-5 text-accent-text/60" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold truncate text-white">{currentTrack.title}</p>
-                <p className="text-[11px] text-slate-400 truncate">{currentTrack.artist}</p>
+                <p className="text-xs font-semibold truncate text-foreground">{currentTrack.title}</p>
+                <p className="text-[11px] text-foreground-muted truncate">{currentTrack.artist}</p>
               </div>
-              <span className="text-[11px] font-mono text-indigo-300">
+              <span className="text-[11px] font-mono text-accent-text font-medium">
                 {isPlaying ? 'Playing' : 'Paused'}
               </span>
             </div>
@@ -84,12 +84,12 @@ export const QueuePanel: React.FC = () => {
 
         {/* Up Next section */}
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 block">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-foreground-muted mb-2 block">
             Up Next ({upcoming.length})
           </span>
 
           {upcoming.length === 0 ? (
-            <div className="py-8 text-center text-xs text-slate-500">
+            <div className="py-8 text-center text-xs text-foreground-subtle">
               Queue is empty. Add songs to keep playing.
             </div>
           ) : (
@@ -99,23 +99,23 @@ export const QueuePanel: React.FC = () => {
                 return (
                   <div
                     key={`${track.id}_${actualIndex}`}
-                    className="group flex items-center gap-2 p-2 rounded-xl hover:bg-white/5 transition border border-transparent hover:border-white/5"
+                    className="group flex items-center gap-2 p-2 rounded-xl hover:bg-surface-hover transition border border-transparent hover:border-border-subtle"
                   >
                     <button
                       onClick={() => playTrack(track)}
-                      className="w-7 h-7 rounded-lg bg-white/5 group-hover:bg-indigo-600 flex items-center justify-center text-slate-400 group-hover:text-white transition shrink-0"
+                      className="w-7 h-7 rounded-lg bg-surface-input group-hover:bg-accent flex items-center justify-center text-foreground-muted group-hover:text-accent-fg transition shrink-0"
                     >
                       <Play className="w-3.5 h-3.5 ml-0.5" />
                     </button>
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate text-slate-200 group-hover:text-white">
+                      <p className="text-xs font-medium truncate text-foreground-secondary group-hover:text-foreground">
                         {track.title}
                       </p>
-                      <p className="text-[11px] text-slate-400 truncate">{track.artist}</p>
+                      <p className="text-[11px] text-foreground-muted truncate">{track.artist}</p>
                     </div>
 
-                    <span className="text-[11px] font-mono text-slate-500 group-hover:hidden">
+                    <span className="text-[11px] font-mono text-foreground-subtle group-hover:hidden">
                       {formatTime(track.duration)}
                     </span>
 
@@ -124,7 +124,7 @@ export const QueuePanel: React.FC = () => {
                       {relativeIndex > 0 && (
                         <button
                           onClick={() => reorderQueue(actualIndex, actualIndex - 1)}
-                          className="p-1 text-slate-400 hover:text-slate-200 transition"
+                          className="p-1 text-foreground-muted hover:text-foreground transition"
                           title="Move up"
                         >
                           <ChevronUp className="w-3.5 h-3.5" />
@@ -133,7 +133,7 @@ export const QueuePanel: React.FC = () => {
                       {relativeIndex < upcoming.length - 1 && (
                         <button
                           onClick={() => reorderQueue(actualIndex, actualIndex + 1)}
-                          className="p-1 text-slate-400 hover:text-slate-200 transition"
+                          className="p-1 text-foreground-muted hover:text-foreground transition"
                           title="Move down"
                         >
                           <ChevronDown className="w-3.5 h-3.5" />
@@ -141,7 +141,7 @@ export const QueuePanel: React.FC = () => {
                       )}
                       <button
                         onClick={() => removeFromQueue(actualIndex)}
-                        className="p-1 text-slate-400 hover:text-red-400 transition"
+                        className="p-1 text-foreground-muted hover:text-red-400 transition"
                         title="Remove"
                       >
                         <X className="w-3.5 h-3.5" />

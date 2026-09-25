@@ -11,6 +11,8 @@ const DEFAULT_SETTINGS: UserSettings = {
   repeatMode: 'off',
   shuffle: false,
   playbackRate: 1,
+  themeMode: 'dark',
+  accentColor: 'blue',
   theme: 'dark',
   visualizerMode: 'spectrum',
   equalizer: {

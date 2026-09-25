@@ -80,18 +80,21 @@ export const Slider: React.FC<SliderProps> = ({
       {showTimeTooltip && isHovered && hoverValue !== null && (
         <div
           style={{ left: `${tooltipPos}px` }}
-          className="absolute -top-7 -translate-x-1/2 px-2 py-0.5 rounded bg-slate-900 border border-white/10 text-[10px] font-mono text-white shadow-lg pointer-events-none"
+          className="absolute -top-7 -translate-x-1/2 px-2 py-0.5 rounded bg-surface-elevated border border-border text-[10px] font-mono text-foreground shadow-lg pointer-events-none"
         >
           {formatTime(hoverValue)}
         </div>
       )}
 
       {/* Track background */}
-      <div className="w-full h-1 group-hover:h-1.5 rounded-full bg-white/10 relative overflow-hidden transition-all">
+      <div
+        style={{ backgroundColor: 'var(--slider-track)' }}
+        className="w-full h-1 group-hover:h-1.5 rounded-full relative overflow-hidden transition-all"
+      >
         {/* Progress fill */}
         <div
           style={{ width: `${percent}%` }}
-          className="h-full bg-indigo-500 group-hover:bg-indigo-400 rounded-full transition-[height]"
+          className="h-full bg-accent group-hover:bg-accent-hover rounded-full transition-[height]"
         />
       </div>
 

@@ -1,9 +1,22 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sonora Music Player</title>
+    <script>
+      (function() {
+        try {
+          var mode = localStorage.getItem('sonora_theme_mode');
+          var accent = localStorage.getItem('sonora_accent_color');
+          var safeMode = (mode === 'light' || mode === 'dark') ? mode : 'dark';
+          var safeAccent = (accent === 'blue' || accent === 'orange' || accent === 'green') ? accent : 'blue';
+          document.documentElement.setAttribute('data-theme', safeMode);
+          document.documentElement.setAttribute('data-accent', safeAccent);
+          document.documentElement.classList.add(safeMode);
+        } catch (e) {}
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -11,8 +24,8 @@
       body {
         margin: 0;
         padding: 0;
-        background-color: #0d0f17;
-        color: #f1f5f9;
+        background-color: var(--color-app, #0b0d14);
+        color: var(--color-foreground, #f1f5f9);
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         overflow: hidden;
         user-select: none;
@@ -20,7 +33,7 @@
       }
     </style>
   </head>
-  <body class="bg-[#0d0f17] text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+  <body class="bg-app text-foreground antialiased selection:bg-accent selection:text-accent-fg">
     <div id="root"></div>
     <script type="module" src="/src/renderer/main.tsx"></script>
   </body>

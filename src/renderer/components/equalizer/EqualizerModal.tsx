@@ -27,34 +27,34 @@ export const EqualizerModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="w-[680px] rounded-2xl glass-panel p-6 shadow-2xl border border-white/10 text-slate-100 flex flex-col gap-6">
+      <div className="w-[680px] rounded-2xl glass-panel p-6 shadow-2xl border border-border text-foreground flex flex-col gap-6">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/5 pb-4">
+        <div className="flex items-center justify-between border-b border-border-subtle pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+            <div className="p-2 rounded-lg bg-accent-subtle text-accent-text">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold tracking-tight">Equalizer</h2>
-              <p className="text-xs text-slate-400">10-band parametric audio filter</p>
+              <h2 className="text-lg font-bold tracking-tight text-foreground">Equalizer</h2>
+              <p className="text-xs text-foreground-muted">10-band parametric audio filter</p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             {/* Enable toggle */}
             <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
-              <span className="text-slate-400">EQ Active</span>
+              <span className="text-foreground-muted">EQ Active</span>
               <input
                 type="checkbox"
                 checked={equalizer.enabled}
                 onChange={(e) => setEnabled(e.target.checked)}
-                className="w-4 h-4 rounded text-indigo-500 focus:ring-0 focus:ring-offset-0 bg-slate-800 border-white/10"
+                className="w-4 h-4 rounded text-accent focus:ring-0 focus:ring-offset-0 bg-surface-hover border-border"
               />
             </label>
 
             <button
               onClick={handleReset}
-              className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-lg transition"
+              className="p-1.5 text-foreground-muted hover:text-foreground hover:bg-surface-hover rounded-lg transition"
               title="Reset to Flat"
             >
               <RotateCcw className="w-4 h-4" />
@@ -62,7 +62,7 @@ export const EqualizerModal: React.FC = () => {
 
             <button
               onClick={() => toggleEqualizer(false)}
-              className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-lg transition"
+              className="p-1.5 text-foreground-muted hover:text-foreground hover:bg-surface-hover rounded-lg transition"
             >
               <X className="w-5 h-5" />
             </button>
@@ -71,32 +71,32 @@ export const EqualizerModal: React.FC = () => {
 
         {/* Presets Chips */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-medium text-slate-400 mr-1">Presets:</span>
+          <span className="text-xs font-medium text-foreground-muted mr-1">Presets:</span>
           {Object.keys(EQ_PRESETS).map((name) => (
             <button
               key={name}
               onClick={() => setEqualizerPreset(name)}
               className={`px-3 py-1 rounded-full text-xs font-medium transition ${
                 equalizer.preset === name
-                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/30'
-                  : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                  ? 'bg-accent text-accent-fg shadow-sm shadow-accent-shadow'
+                  : 'bg-surface-hover text-foreground-secondary hover:bg-surface-elevated hover:text-foreground'
               }`}
             >
               {name}
             </button>
           ))}
           {equalizer.preset === 'Custom' && (
-            <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-500 dark:text-amber-300 border border-amber-500/30">
               Custom
             </span>
           )}
         </div>
 
         {/* Sliders Container */}
-        <div className="flex items-end justify-between px-3 py-6 rounded-xl bg-slate-950/40 border border-white/5">
+        <div className="flex items-end justify-between px-3 py-6 rounded-xl bg-surface-input border border-border-subtle">
           {/* Preamp */}
-          <div className="flex flex-col items-center gap-3 pr-4 border-r border-white/10">
-            <span className="text-[11px] font-mono text-slate-400">
+          <div className="flex flex-col items-center gap-3 pr-4 border-r border-border">
+            <span className="text-[11px] font-mono text-foreground-muted">
               {equalizer.preamp > 0 ? `+${equalizer.preamp.toFixed(1)}` : equalizer.preamp.toFixed(1)} dB
             </span>
             <input
@@ -109,7 +109,7 @@ export const EqualizerModal: React.FC = () => {
               disabled={!equalizer.enabled}
               className="vertical-slider"
             />
-            <span className="text-xs font-semibold text-indigo-400 mt-2">Preamp</span>
+            <span className="text-xs font-semibold text-accent-text mt-2">Preamp</span>
           </div>
 
           {/* 10 Bands */}
@@ -118,7 +118,7 @@ export const EqualizerModal: React.FC = () => {
               const gain = equalizer.bands[index] || 0;
               return (
                 <div key={freq} className="flex flex-col items-center gap-3">
-                  <span className="text-[11px] font-mono text-slate-400">
+                  <span className="text-[11px] font-mono text-foreground-muted">
                     {gain > 0 ? `+${gain.toFixed(1)}` : gain.toFixed(1)}
                   </span>
                   <input
@@ -131,7 +131,7 @@ export const EqualizerModal: React.FC = () => {
                     disabled={!equalizer.enabled}
                     className="vertical-slider"
                   />
-                  <span className="text-[11px] font-medium text-slate-400 mt-2">
+                  <span className="text-[11px] font-medium text-foreground-muted mt-2">
                     {formatFreq(freq)}
                   </span>
                 </div>
@@ -141,7 +141,7 @@ export const EqualizerModal: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
+        <div className="flex items-center justify-between text-xs text-foreground-subtle pt-1">
           <span>Range: -12 dB to +12 dB</span>
           <span>Changes are applied in real-time</span>
         </div>

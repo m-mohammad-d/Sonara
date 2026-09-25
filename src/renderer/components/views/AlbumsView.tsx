@@ -38,9 +38,9 @@ export const AlbumsView: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden p-6 select-none">
-      <div className="mb-6 pb-4 border-b border-white/5">
-        <h1 className="text-2xl font-black text-white tracking-tight">Albums</h1>
-        <p className="text-xs text-slate-400 mt-1">
+      <div className="mb-6 pb-4 border-b border-border-subtle">
+        <h1 className="text-2xl font-black text-foreground tracking-tight">Albums</h1>
+        <p className="text-xs text-foreground-muted mt-1">
           {filteredAlbums.length} {filteredAlbums.length === 1 ? 'album' : 'albums'}
         </p>
       </div>
@@ -54,7 +54,7 @@ export const AlbumsView: React.FC = () => {
               className="group glass-card p-3 rounded-2xl cursor-pointer flex flex-col transition hover:-translate-y-1 duration-150"
             >
               {/* Artwork Container */}
-              <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-900 mb-3 shadow-md border border-white/5 flex items-center justify-center">
+              <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-surface-input mb-3 shadow-md border border-border-subtle flex items-center justify-center">
                 {album.artworkUrl ? (
                   <img
                     src={album.artworkUrl}
@@ -62,27 +62,27 @@ export const AlbumsView: React.FC = () => {
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
-                  <Disc3 className="w-12 h-12 text-slate-700 group-hover:text-slate-600 transition" />
+                  <Disc3 className="w-12 h-12 text-foreground-subtle transition" />
                 )}
 
                 {/* Floating Play Button */}
                 <button
                   onClick={(e) => handlePlayAlbum(e, album.trackIds)}
-                  className="absolute right-2.5 bottom-2.5 w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/40 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all active:scale-90"
+                  className="absolute right-2.5 bottom-2.5 w-10 h-10 rounded-full bg-accent text-accent-fg flex items-center justify-center shadow-lg shadow-accent-shadow opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all active:scale-90"
                   title="Play Album"
                 >
-                  <Play className="w-4 h-4 ml-0.5 fill-white" />
+                  <Play className="w-4 h-4 ml-0.5 fill-current" />
                 </button>
               </div>
 
               {/* Title & Artist */}
-              <h3 className="text-xs font-bold text-slate-100 truncate group-hover:text-indigo-300 transition">
+              <h3 className="text-xs font-bold text-foreground truncate group-hover:text-accent-text transition">
                 {album.name}
               </h3>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5">
+              <p className="text-[11px] text-foreground-muted truncate mt-0.5">
                 {album.artist}
               </p>
-              <span className="text-[10px] text-slate-500 mt-1">
+              <span className="text-[10px] text-foreground-subtle mt-1">
                 {album.year ? `${album.year} • ` : ''}
                 {album.trackCount} {album.trackCount === 1 ? 'track' : 'tracks'}
               </span>
