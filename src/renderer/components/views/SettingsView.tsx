@@ -347,63 +347,179 @@ export const SettingsView: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-surface-input border border-border-subtle flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-foreground-secondary">
-                  Equalizer State
+            <div className="p-4 rounded-xl bg-surface-input border border-border-subtle flex items-center justify-between">
+              <div>
+                <span className="text-xs font-semibold text-foreground block">
+                  Equalizer Processing
                 </span>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={equalizer.enabled}
-                    onChange={(e) => setEqEnabled(e.target.checked)}
-                    className="w-4 h-4 rounded text-accent focus:ring-0 bg-surface-hover border-border"
-                  />
-                  <span className="text-xs text-foreground-muted">
-                    {equalizer.enabled ? "Enabled" : "Bypassed"}
-                  </span>
-                </label>
+                <p className="text-[11px] text-foreground-muted mt-0.5">
+                  {equalizer.enabled
+                    ? "Applying 10-band audio filters to playback"
+                    : "Audio output bypasses all EQ frequency filters"}
+                </p>
               </div>
-
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-foreground-muted">
-                  Active Preset
-                </span>
-                <select
-                  value={equalizer.preset}
-                  onChange={(e) => setEqualizerPreset(e.target.value)}
-                  className="px-3 py-1.5 rounded-xl bg-surface-hover border border-border text-xs text-foreground focus:outline-none focus:border-accent"
+              <div className="flex items-center gap-2.5 shrink-0">
+                <span
+                  className={`text-xs font-medium ${
+                    equalizer.enabled ? "text-accent-text" : "text-foreground-muted"
+                  }`}
                 >
-                  {Object.keys(EQ_PRESETS).map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                  {equalizer.preset === "Custom" && (
-                    <option value="Custom">Custom</option>
-                  )}
-                </select>
+                  {equalizer.enabled ? "Enabled" : "Bypassed"}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={equalizer.enabled}
+                  onClick={() => setEqEnabled(!equalizer.enabled)}
+                  className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                    equalizer.enabled
+                      ? "bg-accent"
+                      : "bg-surface-hover border border-border"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                      equalizer.enabled ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-surface-input border border-border-subtle flex flex-col gap-3">
-              <span className="text-xs font-semibold text-foreground-secondary">
-                Playback Speed
-              </span>
-              <div className="flex items-center gap-2 flex-wrap">
+            <div className="p-4 rounded-xl bg-surface-input border border-border-subtle flex items-center justify-between">
+              <div>
+                <span className="text-xs font-semibold text-foreground block">
+                  Playback Speed
+                </span>
+                <p className="text-[11px] text-foreground-muted mt-0.5">
+                  Adjust playback rate from 0.75x to 2x
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
                 {[0.75, 1, 1.25, 1.5, 2].map((rate) => (
                   <button
                     key={rate}
                     onClick={() => setPlaybackRate(rate)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium transition ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition ${
                       playbackRate === rate
-                        ? "bg-accent text-accent-fg"
-                        : "bg-surface-hover text-foreground-muted hover:text-foreground"
+                        ? "bg-accent text-accent-fg shadow-sm"
+                        : "bg-surface-hover text-foreground-muted hover:text-foreground hover:bg-surface-elevated"
                     }`}
                   >
                     {rate}x
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Equalizer Presets Grid */}
+            <div className="p-4 rounded-xl bg-surface-input border border-border-subtle flex flex-col gap-3.5 md:col-span-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-foreground">
+                      Active Equalizer Preset
+                    </span>
+                    {!equalizer.enabled && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-hover text-foreground-subtle border border-border-subtle">
+                        EQ Bypassed
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-foreground-muted mt-0.5">
+                    Select a frequency response profile tuned for different acoustic profiles and genres
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-foreground-muted">Selected:</span>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent-subtle text-accent-text border border-accent-border">
+                    {equalizer.preset}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                {Object.entries(EQ_PRESETS).map(([name, data]) => {
+                  const isSelected = equalizer.preset === name;
+                  return (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => setEqualizerPreset(name)}
+                      className={`group flex items-center justify-between p-3 rounded-xl border text-left transition-all ${
+                        isSelected
+                          ? "border-accent-border bg-accent-subtle shadow-sm ring-1 ring-accent-border"
+                          : "border-border-subtle bg-surface-input hover:border-border hover:bg-surface-hover"
+                      }`}
+                    >
+                      <div className="flex flex-col gap-1.5 min-w-0 pr-2">
+                        <span
+                          className={`text-xs font-semibold truncate ${
+                            isSelected
+                              ? "text-foreground font-bold"
+                              : "text-foreground-secondary group-hover:text-foreground"
+                          }`}
+                        >
+                          {name}
+                        </span>
+
+                        {/* 10-band mini EQ curve visualization */}
+                        <div
+                          className="flex items-end gap-[3px] h-3.5 pt-0.5"
+                          title={`${name} EQ curve`}
+                        >
+                          {data.gains.map((gain, idx) => {
+                            const pct = Math.max(
+                              18,
+                              Math.round(((gain + 12) / 24) * 100)
+                            );
+                            return (
+                              <span
+                                key={idx}
+                                className={`w-[3px] rounded-full transition-all ${
+                                  isSelected
+                                    ? "bg-accent"
+                                    : "bg-foreground-muted/30 group-hover:bg-foreground-muted/70"
+                                }`}
+                                style={{ height: `${pct}%` }}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {isSelected ? (
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent text-accent-fg shadow-sm">
+                          <Check className="h-3 w-3 stroke-[3]" />
+                        </span>
+                      ) : (
+                        <span className="h-5 w-5 shrink-0 rounded-full border border-border-subtle group-hover:border-border opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </button>
+                  );
+                })}
+
+                {/* Custom preset card if user has adjusted sliders manually */}
+                {equalizer.preset === "Custom" && (
+                  <button
+                    type="button"
+                    onClick={() => openEqModal(true)}
+                    className="group flex items-center justify-between p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 shadow-sm text-left transition-all hover:bg-amber-500/15"
+                  >
+                    <div className="flex flex-col gap-1.5 min-w-0 pr-2">
+                      <span className="text-xs font-bold text-amber-500 dark:text-amber-300 truncate">
+                        Custom
+                      </span>
+                      <span className="text-[10px] text-amber-600/80 dark:text-amber-400/80 truncate">
+                        Custom 10-band curve
+                      </span>
+                    </div>
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-black shadow-sm">
+                      <Check className="h-3 w-3 stroke-[3]" />
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
 
