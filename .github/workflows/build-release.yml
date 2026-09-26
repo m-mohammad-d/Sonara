@@ -1,0 +1,248 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Target release tag (leave blank to auto-detect latest release)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  validate-release:
+    name: Validate Existing Release
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.find-release.outputs.tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Locate and verify target release
+        id: find-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          INPUT_TAG="${{ github.event.inputs.release_tag }}"
+          TARGET_TAG=""
+
+          if [ -n "$INPUT_TAG" ]; then
+            echo "Checking specified release tag: $INPUT_TAG"
+            if gh release view "$INPUT_TAG" >/dev/null 2>&1; then
+              TARGET_TAG="$INPUT_TAG"
+            else
+              echo "::error::Specified GitHub Release '$INPUT_TAG' was not found. Create a Release first, then run this workflow."
+              exit 1
+            fi
+          else
+            echo "Searching for the latest existing GitHub Release..."
+            # Check for latest published release
+            LATEST_TAG=$(gh release view --json tagName -q .tagName 2>/dev/null || true)
+
+            # If not found via view (e.g. draft release), check release list
+            if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
+              LATEST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || true)
+            fi
+
+            if [ -n "$LATEST_TAG" ] && [ "$LATEST_TAG" != "null" ]; then
+              TARGET_TAG="$LATEST_TAG"
+            fi
+          fi
+
+          if [ -z "$TARGET_TAG" ] || [ "$TARGET_TAG" = "null" ]; then
+            echo "::error::No existing GitHub Release was found. Create a Release first, then run this workflow."
+            exit 1
+          fi
+
+          echo "=============================================="
+          echo "Found target release: $TARGET_TAG"
+          gh release view "$TARGET_TAG" --json tagName,name,isDraft,isPrerelease,url \
+            --template 'Tag: {{.tagName}}{{"\n"}}Title: {{.name}}{{"\n"}}Draft: {{.isDraft}}{{"\n"}}Prerelease: {{.isPrerelease}}{{"\n"}}URL: {{.url}}{{"\n"}}'
+          echo "=============================================="
+
+          echo "tag=$TARGET_TAG" >> "$GITHUB_OUTPUT"
+
+  build-windows:
+    name: Build Windows
+    needs: validate-release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile application
+        run: npm run build
+
+      - name: Package Windows executables (Setup & Portable)
+        run: npx electron-builder --win
+
+      - name: Stage Windows installer (exclude Portable)
+        run: |
+          mkdir -p staging-windows
+          cp release/*Setup*.exe staging-windows/
+          if [ -z "$(ls -A staging-windows)" ]; then
+            echo "::error::No Setup/Installer .exe found in release directory!"
+            exit 1
+          fi
+          echo "Staged Windows asset:"
+          ls -lh staging-windows/
+
+      - name: Upload Windows workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-asset
+          path: staging-windows/*
+          if-no-files-found: error
+
+  build-linux:
+    name: Build Linux
+    needs: validate-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile application
+        run: npm run build
+
+      - name: Package Linux AppImage
+        run: npx electron-builder --linux
+
+      - name: Stage Linux AppImage
+        run: |
+          mkdir -p staging-linux
+          cp release/*.AppImage staging-linux/
+          if [ -z "$(ls -A staging-linux)" ]; then
+            echo "::error::No .AppImage found in release directory!"
+            exit 1
+          fi
+          echo "Staged Linux asset:"
+          ls -lh staging-linux/
+
+      - name: Upload Linux workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-asset
+          path: staging-linux/*
+          if-no-files-found: error
+
+  build-macos:
+    name: Build macOS
+    needs: validate-release
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile application
+        run: npm run build
+
+      - name: Package macOS DMGs (Intel x64 & Apple Silicon arm64)
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --mac --x64 --arm64
+
+      - name: Stage macOS DMGs
+        run: |
+          mkdir -p staging-macos
+          cp release/*.dmg staging-macos/
+          if [ -z "$(ls -A staging-macos)" ]; then
+            echo "::error::No .dmg found in release directory!"
+            exit 1
+          fi
+          echo "Staged macOS assets:"
+          ls -lh staging-macos/
+
+      - name: Upload macOS workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-assets
+          path: staging-macos/*
+          if-no-files-found: error
+
+  upload-release:
+    name: Upload Release Assets
+    needs: [validate-release, build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Verify staged assets
+        run: |
+          echo "Release assets ready for upload:"
+          ls -lh release-assets/
+
+      - name: Upload assets to existing GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_TAG: ${{ needs.validate-release.outputs.tag }}
+        run: |
+          echo "Uploading assets to release '$TARGET_TAG'..."
+          cd release-assets
+          shopt -s nullglob
+          FILES=(*)
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "::error::No release assets found to upload!"
+            exit 1
+          fi
+          gh release upload "$TARGET_TAG" "${FILES[@]}" --clobber
+          echo "Upload complete!"
+
+      - name: Publish Run Summary
+        run: |
+          echo "## Release Build & Upload Summary :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Release Tag:** \`${{ needs.validate-release.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Uploaded Assets" >> $GITHUB_STEP_SUMMARY
+          echo "| Filename | Size | SHA-256 Checksum |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          cd release-assets
+          for file in *; do
+            if [ -f "$file" ]; then
+              SIZE=$(ls -lh "$file" | awk '{print $5}')
+              SHA=$(sha256sum "$file" | awk '{print $1}')
+              echo "| \`$file\` | $SIZE | \`$SHA\` |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
