@@ -151,6 +151,7 @@ export interface LibraryData {
   favorites: string[];
   recentlyPlayed: string[];
   folders: string[];
+  removedTrackPaths?: string[];
 }
 
 export type MediaCommand =

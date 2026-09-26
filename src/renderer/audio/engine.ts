@@ -164,6 +164,13 @@ export class AudioEngine {
     this.audio.pause();
   }
 
+  public stop(): void {
+    this.audio.pause();
+    this.audio.removeAttribute('src');
+    this.audio.load();
+    this.listeners.onStateChange?.(false);
+  }
+
   public seek(seconds: number): void {
     if (!isNaN(seconds) && isFinite(seconds)) {
       this.audio.currentTime = Math.max(0, Math.min(seconds, this.audio.duration || seconds));

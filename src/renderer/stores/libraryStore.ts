@@ -23,6 +23,8 @@ interface LibraryState {
   selectFoldersAndScan: () => Promise<void>;
   cancelScan: () => Promise<void>;
   removeFolder: (folder: string) => Promise<void>;
+  removeTrackFromLibrary: (trackId: string) => Promise<void>;
+  clearLibrary: () => Promise<void>;
   addExternalTracks: (tracks: Track[]) => void;
   setSearchQuery: (query: string) => void;
   setSort: (field: SortField, order?: SortOrder) => void;
@@ -208,6 +210,55 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
       });
     } catch (err) {
       console.error('Failed to remove folder:', err);
+    }
+  },
+
+  removeTrackFromLibrary: async (trackId: string) => {
+    try {
+      const updatedLib = await window.electronAPI.removeTrackFromLibrary(trackId);
+      const derived = deriveCollections(updatedLib.tracks || {});
+      set({
+        tracks: updatedLib.tracks || {},
+        folders: updatedLib.folders || [],
+        albums: derived.albums,
+        artists: derived.artists,
+        genres: derived.genres,
+      });
+    } catch (err) {
+      console.error('Failed to remove track from library:', err);
+      const currentTracks = { ...get().tracks };
+      if (currentTracks[trackId]) {
+        delete currentTracks[trackId];
+        const derived = deriveCollections(currentTracks);
+        set({
+          tracks: currentTracks,
+          albums: derived.albums,
+          artists: derived.artists,
+          genres: derived.genres,
+        });
+      }
+    }
+  },
+
+  clearLibrary: async () => {
+    try {
+      await window.electronAPI.clearLibrary();
+      set({
+        tracks: {},
+        folders: [],
+        albums: [],
+        artists: [],
+        genres: [],
+      });
+    } catch (err) {
+      console.error('Failed to clear library:', err);
+      set({
+        tracks: {},
+        folders: [],
+        albums: [],
+        artists: [],
+        genres: [],
+      });
     }
   },
 

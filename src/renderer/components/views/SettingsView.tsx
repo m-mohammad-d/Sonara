@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Folder,
   Plus,
@@ -20,20 +20,36 @@ import { EQ_PRESETS } from "../../audio/presets";
 import { AudioVisualizer } from "../visualizer/AudioVisualizer";
 import { ACCENT_PRESETS, type AccentColor } from "../../theme/theme";
 import type { VisualizerMode } from "../../../shared/types";
+import { ConfirmationModal } from "../common/ConfirmationModal";
+import { clearLibraryWorkflow } from "../../services/trackRemovalService";
 
 import { KeyboardShortcutsSection } from "../shortcuts/KeyboardShortcutsSection";
 import { useSleepTimerStore } from "../../stores/sleepTimerStore";
 import { formatTime } from "../../utils/formatters";
 
 export const SettingsView: React.FC = () => {
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+
   const {
     folders,
+    tracks,
     selectFoldersAndScan,
     scanFolders,
     removeFolder,
     isScanning,
     scanProgress,
   } = useLibraryStore();
+
+  const handleClearLibrary = async () => {
+    setIsClearing(true);
+    setShowClearConfirm(false);
+    try {
+      await clearLibraryWorkflow();
+    } finally {
+      setIsClearing(false);
+    }
+  };
 
   const {
     themeMode,
@@ -318,6 +334,26 @@ export const SettingsView: React.FC = () => {
               </div>
             </div>
           )}
+
+          <div className="pt-3 border-t border-border-subtle flex items-center justify-between">
+            <div>
+              <span className="text-xs font-semibold text-foreground block">
+                Clear Library
+              </span>
+              <p className="text-[11px] text-foreground-muted">
+                Remove all scanned folders, tracks, and history from Sonora without deleting files on disk
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowClearConfirm(true)}
+              disabled={isScanning || isClearing || (folders.length === 0 && Object.keys(tracks).length === 0)}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition disabled:opacity-40"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>{isClearing ? "Clearing..." : "Clear Library"}</span>
+            </button>
+          </div>
         </section>
 
         {/* Section 3: Audio & Equalizer */}
@@ -659,6 +695,17 @@ export const SettingsView: React.FC = () => {
           <span>Electron • React • TypeScript • Web Audio API</span>
         </section>
       </div>
+
+      <ConfirmationModal
+        isOpen={showClearConfirm}
+        title="Clear Music Library?"
+        description="This will remove all tracks, folders, and history from your Sonora library. No audio files on your computer will be deleted."
+        confirmText="Clear Library"
+        cancelText="Cancel"
+        isDestructive
+        onConfirm={handleClearLibrary}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </div>
   );
 };

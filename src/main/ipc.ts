@@ -53,6 +53,7 @@ export function registerIpcHandlers(
         uniqueFolders,
         currentLib.tracks,
         win,
+        currentLib.removedTrackPaths || [],
       );
       const updatedLib = await store.setLibrary({
         folders: uniqueFolders,
@@ -93,6 +94,19 @@ export function registerIpcHandlers(
       return updatedLib;
     },
   );
+
+  // Remove track from library
+  ipcMain.handle(
+    IPC_CHANNELS.LIBRARY_REMOVE_TRACK,
+    async (_event, trackId: string) => {
+      return await store.removeTrackFromLibrary(trackId);
+    },
+  );
+
+  // Clear entire library
+  ipcMain.handle(IPC_CHANNELS.LIBRARY_CLEAR, async () => {
+    return await store.clearLibrary();
+  });
 
   // Save/update playlist
   ipcMain.handle(
@@ -153,9 +167,23 @@ export function registerIpcHandlers(
   // Show file in OS explorer
   ipcMain.handle(
     IPC_CHANNELS.SYSTEM_SHOW_ITEM_IN_FOLDER,
-    (_event, filePath: string) => {
-      shell.showItemInFolder(filePath);
-      return true;
+    async (_event, filePath: string) => {
+      if (!filePath || typeof filePath !== 'string') return false;
+      try {
+        const normalized = path.normalize(filePath);
+        if (fs.existsSync(normalized)) {
+          shell.showItemInFolder(normalized);
+          return true;
+        }
+        const parentDir = path.dirname(normalized);
+        if (fs.existsSync(parentDir)) {
+          await shell.openPath(parentDir);
+          return true;
+        }
+      } catch (err) {
+        console.error('Failed to show item in folder:', err);
+      }
+      return false;
     },
   );
 
@@ -293,6 +321,7 @@ async function importAudioFiles(
 
       if (fs.existsSync(normalized) && fs.statSync(normalized).isFile()) {
         validPaths.push(normalized);
+        store.unmarkRemovedTrack(normalized);
       } else {
         failedCount++;
       }
@@ -338,12 +367,17 @@ async function importAudioFiles(
     }
   }
 
-  if (Object.keys(newTracksMap).length > 0) {
+  const updatedRemovedPaths = store.getLibrary().removedTrackPaths;
+  if (
+    Object.keys(newTracksMap).length > 0 ||
+    currentLib.removedTrackPaths?.length !== updatedRemovedPaths?.length
+  ) {
     await store.setLibrary({
       tracks: {
         ...currentLib.tracks,
         ...newTracksMap,
       },
+      removedTrackPaths: updatedRemovedPaths,
     });
   }
 

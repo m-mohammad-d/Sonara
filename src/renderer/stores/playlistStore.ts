@@ -15,6 +15,8 @@ interface PlaylistState {
   reorderPlaylistTracks: (playlistId: string, fromIndex: number, toIndex: number) => Promise<void>;
   toggleFavorite: (trackId: string) => Promise<void>;
   isFavorite: (trackId: string) => boolean;
+  handleTrackRemoved: (trackId: string) => void;
+  clearAll: () => void;
 }
 
 export const usePlaylistStore = create<PlaylistState>((set, get) => ({
@@ -167,5 +169,36 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
 
   isFavorite: (trackId: string) => {
     return get().favorites.includes(trackId);
+  },
+
+  handleTrackRemoved: (trackId: string) => {
+    const { playlists, favorites, recentlyPlayed } = get();
+    const updatedFavorites = favorites.filter((id) => id !== trackId);
+    const updatedRecent = recentlyPlayed.filter((id) => id !== trackId);
+    const updatedPlaylists: Record<string, Playlist> = {};
+    for (const [id, pl] of Object.entries(playlists)) {
+      if (pl.trackIds && pl.trackIds.includes(trackId)) {
+        updatedPlaylists[id] = {
+          ...pl,
+          trackIds: pl.trackIds.filter((tId) => tId !== trackId),
+          updatedAt: Date.now(),
+        };
+      } else {
+        updatedPlaylists[id] = pl;
+      }
+    }
+    set({
+      favorites: updatedFavorites,
+      recentlyPlayed: updatedRecent,
+      playlists: updatedPlaylists,
+    });
+  },
+
+  clearAll: () => {
+    set({
+      playlists: {},
+      favorites: [],
+      recentlyPlayed: [],
+    });
   },
 }));

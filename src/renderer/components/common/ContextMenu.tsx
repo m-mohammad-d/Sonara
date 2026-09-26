@@ -16,6 +16,7 @@ import { useLibraryStore } from '../../stores/libraryStore';
 import { createExportCollection } from '../../../shared/export/normalize';
 import type { ExportFormat, ExportSource } from '../../../shared/export/types';
 import type { Track } from '../../../shared/types';
+import { removeTrackFromLibrary } from '../../services/trackRemovalService';
 
 export const ContextMenu: React.FC = () => {
   const { contextMenu, closeContextMenu, showToast } = useUIStore();
@@ -50,7 +51,7 @@ export const ContextMenu: React.FC = () => {
 
   // Position clamping
   const menuWidth = 200;
-  const menuHeight = 320;
+  const menuHeight = 370;
   const clampedX = Math.min(x, window.innerWidth - menuWidth - 10);
   const clampedY = Math.min(y, window.innerHeight - menuHeight - 10);
 
@@ -223,6 +224,19 @@ export const ContextMenu: React.FC = () => {
           >
             <Folder className="w-3.5 h-3.5 text-foreground-muted" />
             <span>Show in Folder</span>
+          </button>
+
+          <div className="my-1 border-t border-border-subtle" />
+
+          <button
+            onClick={() => {
+              removeTrackFromLibrary(track);
+              closeContextMenu();
+            }}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 transition w-full text-left"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Remove from Library</span>
           </button>
         </>
       )}

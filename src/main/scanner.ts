@@ -158,7 +158,8 @@ export class LibraryScanner {
   public async scanFolders(
     folders: string[],
     existingTracks: Record<string, Track>,
-    window: BrowserWindow | null
+    window: BrowserWindow | null,
+    removedTrackPaths?: string[]
   ): Promise<Record<string, Track>> {
     if (this.isScanning) {
       return existingTracks;
@@ -167,6 +168,9 @@ export class LibraryScanner {
     this.isScanning = true;
     this.isCancelled = false;
 
+    const removedPathsSet = new Set(
+      (removedTrackPaths || []).map((p) => path.normalize(p).toLowerCase())
+    );
     const updatedTracks: Record<string, Track> = { ...existingTracks };
     const albumsSet = new Set<string>();
     const artistsSet = new Set<string>();
@@ -206,6 +210,11 @@ export class LibraryScanner {
         if (this.isCancelled) break;
         processed++;
 
+        const normPath = path.normalize(filePath).toLowerCase();
+        if (removedPathsSet.has(normPath)) {
+          continue;
+        }
+
         const trackId = crypto.createHash('sha1').update(filePath).digest('hex');
         const track = await this.parseTrack(filePath, updatedTracks[trackId]);
         if (track) {
@@ -229,10 +238,11 @@ export class LibraryScanner {
         }
       }
 
-      // Step 3: Remove tracks whose files no longer exist on disk
+      // Step 3: Remove tracks whose files no longer exist on disk or were removed
       for (const id of Object.keys(updatedTracks)) {
         const tr = updatedTracks[id];
-        if (!fs.existsSync(tr.path)) {
+        const normPath = path.normalize(tr.path).toLowerCase();
+        if (!fs.existsSync(tr.path) || removedPathsSet.has(normPath)) {
           delete updatedTracks[id];
         }
       }

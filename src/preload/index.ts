@@ -37,6 +37,8 @@ export interface SonoraAPI {
   resolveTracks: (filePaths: string[]) => Promise<Track[]>;
   getPathForFile: (file: File) => string;
   importFiles: (filePaths: string[]) => Promise<FileImportResult>;
+  removeTrackFromLibrary: (trackId: string) => Promise<LibraryData>;
+  clearLibrary: () => Promise<LibraryData>;
 }
 
 const api: SonoraAPI = {
@@ -47,6 +49,9 @@ const api: SonoraAPI = {
   cancelScan: () => ipcRenderer.invoke(IPC_CHANNELS.LIBRARY_CANCEL_SCAN),
   removeFolder: (folder: string) =>
     ipcRenderer.invoke(IPC_CHANNELS.LIBRARY_REMOVE_FOLDER, folder),
+  removeTrackFromLibrary: (trackId: string) =>
+    ipcRenderer.invoke(IPC_CHANNELS.LIBRARY_REMOVE_TRACK, trackId),
+  clearLibrary: () => ipcRenderer.invoke(IPC_CHANNELS.LIBRARY_CLEAR),
   onScanProgress: (callback: (progress: ScanProgress) => void) => {
     const subscription = (
       _event: Electron.IpcRendererEvent,

@@ -30,6 +30,8 @@ interface PlayerState {
   clearQueue: () => void;
   toggleShuffleQueue: (enabled: boolean) => void;
   clearError: () => void;
+  handleTrackRemoval: (trackId: string) => Promise<void>;
+  resetPlayer: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => {
@@ -534,6 +536,78 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       set({
         errorMessage: null,
       });
+    },
+
+    handleTrackRemoval: async (trackId: string) => {
+      const { currentTrack, isPlaying, queue, originalQueue, queueIndex } = get();
+
+      const isCurrent = currentTrack?.id === trackId;
+      const filteredQueue = queue.filter((t) => t.id !== trackId);
+      const filteredOriginal = originalQueue.filter((t) => t.id !== trackId);
+
+      if (isCurrent) {
+        if (filteredQueue.length > 0) {
+          const nextIndex = Math.min(queueIndex, filteredQueue.length - 1);
+          const nextTrack = filteredQueue[nextIndex];
+
+          if (isPlaying) {
+            await get().playTrack(nextTrack, filteredQueue);
+          } else {
+            engine.stop();
+            set({
+              currentTrack: nextTrack,
+              queue: filteredQueue,
+              originalQueue: filteredOriginal,
+              queueIndex: nextIndex,
+              currentTime: 0,
+              duration: nextTrack.duration || 0,
+              isPlaying: false,
+            });
+            window.electronAPI.saveSettings({ lastTrackId: nextTrack.id });
+          }
+        } else {
+          engine.stop();
+          set({
+            currentTrack: null,
+            queue: [],
+            originalQueue: [],
+            queueIndex: -1,
+            currentTime: 0,
+            duration: 0,
+            isPlaying: false,
+          });
+          window.electronAPI.saveSettings({ lastTrackId: undefined });
+        }
+      } else {
+        let newIndex = queueIndex;
+        if (currentTrack) {
+          const foundIdx = filteredQueue.findIndex((t) => t.id === currentTrack.id);
+          newIndex = foundIdx >= 0 ? foundIdx : Math.min(queueIndex, filteredQueue.length - 1);
+        } else {
+          newIndex = filteredQueue.length > 0 ? 0 : -1;
+        }
+
+        set({
+          queue: filteredQueue,
+          originalQueue: filteredOriginal,
+          queueIndex: newIndex,
+        });
+      }
+    },
+
+    resetPlayer: () => {
+      engine.stop();
+      set({
+        currentTrack: null,
+        isPlaying: false,
+        currentTime: 0,
+        duration: 0,
+        queue: [],
+        originalQueue: [],
+        queueIndex: -1,
+        errorMessage: null,
+      });
+      window.electronAPI.saveSettings({ lastTrackId: undefined });
     },
   };
 });

@@ -1,7 +1,7 @@
 import { app } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { LibraryData, UserSettings } from '../shared/types';
+import type { LibraryData, UserSettings, Playlist } from '../shared/types';
 
 const DEFAULT_SETTINGS: UserSettings = {
   folders: [],
@@ -35,6 +35,7 @@ const DEFAULT_LIBRARY_DATA: LibraryData = {
   favorites: [],
   recentlyPlayed: [],
   folders: [],
+  removedTrackPaths: [],
 };
 
 export class AppStore {
@@ -131,5 +132,61 @@ export class AppStore {
     }
     this.libraryData.recentlyPlayed = recent;
     await this.saveJSON(this.libraryFilePath, this.libraryData);
+  }
+
+  public async removeTrackFromLibrary(trackId: string): Promise<LibraryData> {
+    const track = this.libraryData.tracks[trackId];
+    if (track) {
+      const normPath = path.normalize(track.path).toLowerCase();
+      const removed = new Set(this.libraryData.removedTrackPaths || []);
+      removed.add(normPath);
+      this.libraryData.removedTrackPaths = Array.from(removed);
+      delete this.libraryData.tracks[trackId];
+    }
+
+    // Clean up favorites
+    this.libraryData.favorites = this.libraryData.favorites.filter((id) => id !== trackId);
+
+    // Clean up recently played
+    this.libraryData.recentlyPlayed = this.libraryData.recentlyPlayed.filter((id) => id !== trackId);
+
+    // Clean up playlists
+    const updatedPlaylists: Record<string, Playlist> = {};
+    for (const [plId, pl] of Object.entries(this.libraryData.playlists || {})) {
+      if (pl.trackIds && pl.trackIds.includes(trackId)) {
+        updatedPlaylists[plId] = {
+          ...pl,
+          trackIds: pl.trackIds.filter((id) => id !== trackId),
+          updatedAt: Date.now(),
+        };
+      } else {
+        updatedPlaylists[plId] = pl;
+      }
+    }
+    this.libraryData.playlists = updatedPlaylists;
+
+    await this.saveJSON(this.libraryFilePath, this.libraryData);
+    return this.libraryData;
+  }
+
+  public unmarkRemovedTrack(filePath: string): void {
+    if (!this.libraryData.removedTrackPaths || this.libraryData.removedTrackPaths.length === 0) return;
+    const normPath = path.normalize(filePath).toLowerCase();
+    this.libraryData.removedTrackPaths = this.libraryData.removedTrackPaths.filter(
+      (p) => p.toLowerCase() !== normPath
+    );
+  }
+
+  public async clearLibrary(): Promise<LibraryData> {
+    this.libraryData = {
+      tracks: {},
+      playlists: {},
+      favorites: [],
+      recentlyPlayed: [],
+      folders: [],
+      removedTrackPaths: [],
+    };
+    await this.saveJSON(this.libraryFilePath, this.libraryData);
+    return this.libraryData;
   }
 }

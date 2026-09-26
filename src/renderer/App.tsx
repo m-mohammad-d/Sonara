@@ -28,13 +28,14 @@ import { useSleepTimerStore } from './stores/sleepTimerStore';
 import { useFileDrop } from './hooks/useFileDrop';
 import { DragDropOverlay } from './components/common/DragDropOverlay';
 import { AlertCircle, X, Moon } from 'lucide-react';
+import { removeTrackFromLibrary } from './services/trackRemovalService';
 
 export const App: React.FC = () => {
   const currentView = useUIStore((s) => s.currentView);
   const toast = useUIStore((s) => s.toast);
   const clearToast = useUIStore((s) => s.clearToast);
   const { initSettings } = useSettingsStore();
-  const { initPlayer, errorMessage, clearError } = usePlayerStore();
+  const { initPlayer, errorMessage, clearError, currentTrack } = usePlayerStore();
   const { initLibrary } = useLibraryStore();
   const { initPlaylists } = usePlaylistStore();
   const { isDragging, isProcessing } = useFileDrop();
@@ -127,12 +128,26 @@ export const App: React.FC = () => {
                 <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
                 <span>{errorMessage}</span>
               </div>
-              <button
-                onClick={clearError}
-                className="p-1 hover:text-foreground transition"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {currentTrack && (
+                  <button
+                    onClick={() => {
+                      const track = currentTrack;
+                      clearError();
+                      removeTrackFromLibrary(track);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-200 hover:text-white transition text-[11px] font-medium"
+                  >
+                    Remove from Library
+                  </button>
+                )}
+                <button
+                  onClick={clearError}
+                  className="p-1 hover:text-foreground transition"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           )}
 

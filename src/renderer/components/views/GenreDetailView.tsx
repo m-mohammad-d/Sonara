@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Shuffle, Radio, Clock, ArrowLeft, Heart } from 'lucide-react';
+import { Play, Shuffle, Radio, Clock, ArrowLeft, Heart, MoreHorizontal } from 'lucide-react';
 import { useLibraryStore } from '../../stores/libraryStore';
 import { usePlayerStore } from '../../stores/playerStore';
 import { usePlaylistStore } from '../../stores/playlistStore';
@@ -99,7 +99,7 @@ export const GenreDetailView: React.FC = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto pr-1">
-        <div className="grid grid-cols-[40px_1fr_1fr_1fr_60px_40px] items-center px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-foreground-subtle border-b border-border-subtle sticky top-0 bg-app/95 backdrop-blur z-10">
+        <div className="grid grid-cols-[40px_1fr_1fr_1fr_60px_64px] items-center px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-foreground-subtle border-b border-border-subtle sticky top-0 bg-app/95 backdrop-blur z-10">
           <span>#</span>
           <span>Title</span>
           <span>Artist</span>
@@ -123,7 +123,7 @@ export const GenreDetailView: React.FC = () => {
                   e.preventDefault();
                   openContextMenu({ x: e.clientX, y: e.clientY, track });
                 }}
-                className={`group grid grid-cols-[40px_1fr_1fr_1fr_60px_40px] items-center px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
+                className={`group grid grid-cols-[40px_1fr_1fr_1fr_60px_64px] items-center px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
                   isCurrent
                     ? 'bg-accent-subtle text-accent-text border border-accent-border font-medium'
                     : 'text-foreground-secondary hover:bg-surface-hover border border-transparent'
@@ -149,19 +149,36 @@ export const GenreDetailView: React.FC = () => {
                 <span className="truncate text-foreground-subtle pr-3">{track.album}</span>
                 <span className="text-right font-mono text-foreground-muted">{formatTime(track.duration)}</span>
 
-                <div className="flex items-center justify-end">
+                <div className="flex items-center justify-end gap-1">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleFavorite(track.id);
                     }}
                     className="p-1 text-foreground-subtle hover:text-red-400 transition"
+                    title={favorited ? 'Remove from favorites' : 'Add to favorites'}
                   >
                     <Heart
                       className={`w-3.5 h-3.5 ${
                         favorited ? 'text-red-400 fill-red-400' : 'opacity-0 group-hover:opacity-100'
                       }`}
                     />
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      openContextMenu({
+                        x: rect.left,
+                        y: rect.bottom + 4,
+                        track,
+                      });
+                    }}
+                    className="p-1 text-foreground-subtle hover:text-foreground opacity-0 group-hover:opacity-100 transition rounded hover:bg-surface-hover"
+                    title="More actions"
+                  >
+                    <MoreHorizontal className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>

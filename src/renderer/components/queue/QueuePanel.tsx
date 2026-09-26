@@ -1,12 +1,12 @@
 import React from 'react';
-import { X, Trash2, Music2, ChevronUp, ChevronDown, Play } from 'lucide-react';
+import { X, Trash2, Music2, ChevronUp, ChevronDown, Play, MoreHorizontal } from 'lucide-react';
 import { usePlayerStore } from '../../stores/playerStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatTime } from '../../utils/formatters';
 import { ExportMenu } from '../export/ExportMenu';
 
 export const QueuePanel: React.FC = () => {
-  const { isQueueOpen, toggleQueue } = useUIStore();
+  const { isQueueOpen, toggleQueue, openContextMenu } = useUIStore();
   const {
     queue,
     queueIndex,
@@ -68,7 +68,13 @@ export const QueuePanel: React.FC = () => {
             <span className="text-[11px] font-bold uppercase tracking-wider text-accent-text mb-2 block">
               Now Playing
             </span>
-            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-accent-subtle border border-accent-border">
+            <div
+              onContextMenu={(e) => {
+                e.preventDefault();
+                openContextMenu({ x: e.clientX, y: e.clientY, track: currentTrack });
+              }}
+              className="group flex items-center gap-3 p-2.5 rounded-xl bg-accent-subtle border border-accent-border cursor-pointer"
+            >
               <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-elevated shrink-0 flex items-center justify-center border border-border">
                 {currentTrack.artworkUrl ? (
                   <img
@@ -84,9 +90,24 @@ export const QueuePanel: React.FC = () => {
                 <p className="text-xs font-semibold truncate text-foreground">{currentTrack.title}</p>
                 <p className="text-[11px] text-foreground-muted truncate">{currentTrack.artist}</p>
               </div>
-              <span className="text-[11px] font-mono text-accent-text font-medium">
+              <span className="text-[11px] font-mono text-accent-text font-medium group-hover:hidden">
                 {isPlaying ? 'Playing' : 'Paused'}
               </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  openContextMenu({
+                    x: rect.left,
+                    y: rect.bottom + 4,
+                    track: currentTrack,
+                  });
+                }}
+                className="hidden group-hover:flex p-1 text-foreground-muted hover:text-foreground transition rounded hover:bg-surface-hover"
+                title="More actions"
+              >
+                <MoreHorizontal className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         )}
@@ -108,6 +129,10 @@ export const QueuePanel: React.FC = () => {
                 return (
                   <div
                     key={`${track.id}_${actualIndex}`}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      openContextMenu({ x: e.clientX, y: e.clientY, track });
+                    }}
                     className="group flex items-center gap-2 p-2 rounded-xl hover:bg-surface-hover transition border border-transparent hover:border-border-subtle"
                   >
                     <button
@@ -149,9 +174,24 @@ export const QueuePanel: React.FC = () => {
                         </button>
                       )}
                       <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          openContextMenu({
+                            x: rect.left,
+                            y: rect.bottom + 4,
+                            track,
+                          });
+                        }}
+                        className="p-1 text-foreground-muted hover:text-foreground transition"
+                        title="More actions"
+                      >
+                        <MoreHorizontal className="w-3.5 h-3.5" />
+                      </button>
+                      <button
                         onClick={() => removeFromQueue(actualIndex)}
                         className="p-1 text-foreground-muted hover:text-red-400 transition"
-                        title="Remove"
+                        title="Remove from queue"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>

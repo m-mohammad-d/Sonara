@@ -23,4 +23,6 @@ export const IPC_CHANNELS = {
   FILES_GET_PENDING: "files:get-pending",
   TRACKS_RESOLVE_BY_PATHS: "tracks:resolve-by-paths",
   FILES_IMPORT: "files:import",
+  LIBRARY_REMOVE_TRACK: "library:remove-track",
+  LIBRARY_CLEAR: "library:clear",
 } as const;
