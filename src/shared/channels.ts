@@ -22,4 +22,5 @@ export const IPC_CHANNELS = {
   FILES_OPEN: "files:open",
   FILES_GET_PENDING: "files:get-pending",
   TRACKS_RESOLVE_BY_PATHS: "tracks:resolve-by-paths",
+  FILES_IMPORT: "files:import",
 } as const;

@@ -1,16 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { SUPPORTED_AUDIO_EXTENSIONS as EXTENSIONS_LIST } from '../shared/types';
 
-export const SUPPORTED_AUDIO_EXTENSIONS = new Set<string>([
-  '.mp3',
-  '.flac',
-  '.wav',
-  '.ogg',
-  '.m4a',
-  '.aac',
-  '.opus',
-  '.wma',
-]);
+export const SUPPORTED_AUDIO_EXTENSIONS = new Set<string>(EXTENSIONS_LIST);
 
 /**
  * Extracts and validates audio file paths from command-line arguments.

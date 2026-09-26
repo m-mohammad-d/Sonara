@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, webUtils } from "electron";
 import { IPC_CHANNELS } from "../shared/channels";
 import type {
   Track,
@@ -7,6 +7,7 @@ import type {
   ScanProgress,
   UserSettings,
   MediaCommand,
+  FileImportResult,
 } from "../shared/types";
 import type { ExportRequest, ExportResult } from "../shared/export/types";
 
@@ -34,6 +35,8 @@ export interface SonoraAPI {
   onOpenFiles: (callback: (filePaths: string[]) => void) => () => void;
   getPendingFiles: () => Promise<string[]>;
   resolveTracks: (filePaths: string[]) => Promise<Track[]>;
+  getPathForFile: (file: File) => string;
+  importFiles: (filePaths: string[]) => Promise<FileImportResult>;
 }
 
 const api: SonoraAPI = {
@@ -112,6 +115,20 @@ const api: SonoraAPI = {
 
   resolveTracks: (filePaths: string[]) =>
     ipcRenderer.invoke(IPC_CHANNELS.TRACKS_RESOLVE_BY_PATHS, filePaths),
+
+  getPathForFile: (file: File) => {
+    try {
+      if (webUtils && typeof webUtils.getPathForFile === "function") {
+        return webUtils.getPathForFile(file);
+      }
+    } catch {
+      // Fallback
+    }
+    return (file as unknown as { path?: string }).path || "";
+  },
+
+  importFiles: (filePaths: string[]) =>
+    ipcRenderer.invoke(IPC_CHANNELS.FILES_IMPORT, filePaths),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);
@@ -119,6 +136,8 @@ contextBridge.exposeInMainWorld("electronAPI", api);
 contextBridge.exposeInMainWorld("sonora", {
   files: {
     onOpen: (callback: (filePaths: string[]) => void) => api.onOpenFiles(callback),
+    getPathForFile: (file: File) => api.getPathForFile(file),
+    import: (filePaths: string[]) => api.importFiles(filePaths),
   },
 });
 

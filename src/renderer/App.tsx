@@ -25,6 +25,8 @@ import { useLibraryStore } from './stores/libraryStore';
 import { usePlaylistStore } from './stores/playlistStore';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useSleepTimerStore } from './stores/sleepTimerStore';
+import { useFileDrop } from './hooks/useFileDrop';
+import { DragDropOverlay } from './components/common/DragDropOverlay';
 import { AlertCircle, X, Moon } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -35,6 +37,7 @@ export const App: React.FC = () => {
   const { initPlayer, errorMessage, clearError } = usePlayerStore();
   const { initLibrary } = useLibraryStore();
   const { initPlaylists } = usePlaylistStore();
+  const { isDragging, isProcessing } = useFileDrop();
 
   useKeyboardShortcuts();
 
@@ -146,6 +149,7 @@ export const App: React.FC = () => {
       <EqualizerModal />
       <NewPlaylistModal />
       <ContextMenu />
+      <DragDropOverlay isDragging={isDragging} isProcessing={isProcessing} />
 
       {/* Toast Notification */}
       {toast && (

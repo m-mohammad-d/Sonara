@@ -1,3 +1,24 @@
+export const SUPPORTED_AUDIO_EXTENSIONS = [
+  '.mp3',
+  '.flac',
+  '.wav',
+  '.m4a',
+  '.aac',
+  '.ogg',
+  '.opus',
+  '.wma',
+] as const;
+
+export type SupportedAudioExtension = (typeof SUPPORTED_AUDIO_EXTENSIONS)[number];
+
+export interface FileImportResult {
+  added: Track[];
+  existing: Track[];
+  unsupportedCount: number;
+  failedCount: number;
+  totalDropped: number;
+}
+
 export interface Track {
   id: string;
   path: string;

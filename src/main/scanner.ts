@@ -77,8 +77,11 @@ export class LibraryScanner {
   }
 
   public async parseTrack(filePath: string, existingTrack?: Track): Promise<Track | null> {
+    const ext = path.extname(filePath).toLowerCase();
+    if (!SUPPORTED_AUDIO_EXTENSIONS.has(ext)) return null;
+
     const fileStat = await fs.promises.stat(filePath).catch(() => null);
-    if (!fileStat || !fileStat.isFile()) return null;
+    if (!fileStat || !fileStat.isFile() || fileStat.size === 0) return null;
 
     const trackId = crypto.createHash('sha1').update(filePath).digest('hex');
 

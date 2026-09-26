@@ -1,9 +1,12 @@
 import { ipcMain, dialog, shell, BrowserWindow, Notification, globalShortcut } from "electron";
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { IPC_CHANNELS } from "../shared/channels";
 import type { AppStore } from "./store";
 import type { LibraryScanner } from "./scanner";
-import type { Track, Playlist, UserSettings, MediaCommand } from "../shared/types";
+import type { Track, Playlist, UserSettings, MediaCommand, FileImportResult } from "../shared/types";
+import { SUPPORTED_AUDIO_EXTENSIONS } from "./fileArgs";
 import type { ExportRequest } from "../shared/export/types";
 import { handleExportMusicList } from "./export/exportManager";
 
@@ -227,40 +230,130 @@ export function registerIpcHandlers(
   ipcMain.handle(
     IPC_CHANNELS.TRACKS_RESOLVE_BY_PATHS,
     async (_event, filePaths: string[]) => {
-      if (!Array.isArray(filePaths) || filePaths.length === 0) return [];
-      const currentLib = store.getLibrary();
-      const resolvedTracks: Track[] = [];
-      const newTracksMap: Record<string, Track> = {};
-
-      for (const filePath of filePaths) {
-        if (!filePath || typeof filePath !== 'string') continue;
-        try {
-          const trackId = crypto.createHash('sha1').update(filePath).digest('hex');
-          const existing = currentLib.tracks[trackId];
-          const track = await scanner.parseTrack(filePath, existing);
-          if (track) {
-            resolvedTracks.push(track);
-            if (!existing) {
-              newTracksMap[trackId] = track;
-            }
-          }
-        } catch (err) {
-          console.error(`Failed to resolve track for ${filePath}:`, err);
-        }
-      }
-
-      if (Object.keys(newTracksMap).length > 0) {
-        await store.setLibrary({
-          tracks: {
-            ...currentLib.tracks,
-            ...newTracksMap,
-          },
-        });
-      }
-
-      return resolvedTracks;
+      const result = await importAudioFiles(filePaths, store, scanner);
+      return [...result.added, ...result.existing];
     },
   );
+
+  // Import files with complete stats (for drag & drop and external files)
+  ipcMain.handle(
+    IPC_CHANNELS.FILES_IMPORT,
+    async (_event, filePaths: string[]) => {
+      return await importAudioFiles(filePaths, store, scanner);
+    },
+  );
+}
+
+async function importAudioFiles(
+  filePaths: string[],
+  store: AppStore,
+  scanner: LibraryScanner,
+): Promise<FileImportResult> {
+  if (!Array.isArray(filePaths) || filePaths.length === 0) {
+    return {
+      added: [],
+      existing: [],
+      unsupportedCount: 0,
+      failedCount: 0,
+      totalDropped: 0,
+    };
+  }
+
+  const totalDropped = filePaths.length;
+  const validPaths: string[] = [];
+  const seenPaths = new Set<string>();
+  let unsupportedCount = 0;
+  let failedCount = 0;
+
+  for (const rawPath of filePaths) {
+    if (!rawPath || typeof rawPath !== 'string') {
+      unsupportedCount++;
+      continue;
+    }
+
+    const trimmed = rawPath.trim();
+    if (!trimmed) {
+      unsupportedCount++;
+      continue;
+    }
+
+    const ext = path.extname(trimmed).toLowerCase();
+    if (!SUPPORTED_AUDIO_EXTENSIONS.has(ext)) {
+      unsupportedCount++;
+      continue;
+    }
+
+    try {
+      const normalized = path.normalize(trimmed);
+      const lowerKey = normalized.toLowerCase();
+      if (seenPaths.has(lowerKey)) {
+        continue;
+      }
+      seenPaths.add(lowerKey);
+
+      if (fs.existsSync(normalized) && fs.statSync(normalized).isFile()) {
+        validPaths.push(normalized);
+      } else {
+        failedCount++;
+      }
+    } catch {
+      failedCount++;
+    }
+  }
+
+  const currentLib = store.getLibrary();
+  const added: Track[] = [];
+  const existing: Track[] = [];
+  const newTracksMap: Record<string, Track> = {};
+
+  // Process in bounded concurrent batches to maintain responsiveness
+  const BATCH_SIZE = 8;
+  for (let i = 0; i < validPaths.length; i += BATCH_SIZE) {
+    const batch = validPaths.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map(async (filePath) => {
+        try {
+          const trackId = crypto.createHash('sha1').update(filePath).digest('hex');
+          const existingTrack = currentLib.tracks[trackId];
+          const track = await scanner.parseTrack(filePath, existingTrack);
+          return { track, isExisting: !!existingTrack, trackId };
+        } catch (err) {
+          console.error(`Failed to parse track ${filePath}:`, err);
+          return { track: null, isExisting: false, trackId: '' };
+        }
+      }),
+    );
+
+    for (const res of results) {
+      if (!res.track) {
+        failedCount++;
+        continue;
+      }
+      if (res.isExisting) {
+        existing.push(res.track);
+      } else {
+        added.push(res.track);
+        newTracksMap[res.trackId] = res.track;
+      }
+    }
+  }
+
+  if (Object.keys(newTracksMap).length > 0) {
+    await store.setLibrary({
+      tracks: {
+        ...currentLib.tracks,
+        ...newTracksMap,
+      },
+    });
+  }
+
+  return {
+    added,
+    existing,
+    unsupportedCount,
+    failedCount,
+    totalDropped,
+  };
 }
 
 const MEDIA_SHORTCUTS: ReadonlyArray<{ accelerator: string; command: MediaCommand }> = [
