@@ -67,6 +67,64 @@
       }
     ],
     "asar": true,
+    "fileAssociations": [
+      {
+        "ext": "mp3",
+        "name": "Sonora.mp3",
+        "description": "MP3 Audio File",
+        "role": "Viewer",
+        "mimeType": "audio/mpeg"
+      },
+      {
+        "ext": "flac",
+        "name": "Sonora.flac",
+        "description": "FLAC Audio File",
+        "role": "Viewer",
+        "mimeType": "audio/flac"
+      },
+      {
+        "ext": "wav",
+        "name": "Sonora.wav",
+        "description": "WAV Audio File",
+        "role": "Viewer",
+        "mimeType": "audio/wav"
+      },
+      {
+        "ext": "m4a",
+        "name": "Sonora.m4a",
+        "description": "M4A Audio File",
+        "role": "Viewer",
+        "mimeType": "audio/mp4"
+      },
+      {
+        "ext": "aac",
+        "name": "Sonora.aac",
+        "description": "AAC Audio File",
+        "role": "Viewer",
+        "mimeType": "audio/aac"
+      },
+      {
+        "ext": "ogg",
+        "name": "Sonora.ogg",
+        "description": "OGG Audio File",
+        "role": "Viewer",
+        "mimeType": "audio/ogg"
+      },
+      {
+        "ext": "opus",
+        "name": "Sonora.opus",
+        "description": "OPUS Audio File",
+        "role": "Viewer",
+        "mimeType": "audio/opus"
+      },
+      {
+        "ext": "wma",
+        "name": "Sonora.wma",
+        "description": "WMA Audio File",
+        "role": "Viewer",
+        "mimeType": "audio/x-ms-wma"
+      }
+    ],
     "win": {
       "icon": "public/icon.png",
       "target": [
@@ -90,7 +148,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Sonora",
-      "artifactName": "Sonora Setup ${version}.${ext}"
+      "artifactName": "Sonora Setup ${version}.${ext}",
+      "include": "build/installer.nsh"
     },
     "portable": {
       "artifactName": "Sonora Portable ${version}.${ext}"

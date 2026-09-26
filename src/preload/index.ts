@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { IPC_CHANNELS } from "../shared/channels";
 import type {
+  Track,
   LibraryData,
   Playlist,
   ScanProgress,
@@ -30,6 +31,9 @@ export interface SonoraAPI {
   isWindowMaximized: () => Promise<boolean>;
   showNotification: (title: string, artist: string) => Promise<boolean>;
   exportMusicList: (request: ExportRequest) => Promise<ExportResult>;
+  onOpenFiles: (callback: (filePaths: string[]) => void) => () => void;
+  getPendingFiles: () => Promise<string[]>;
+  resolveTracks: (filePaths: string[]) => Promise<Track[]>;
 }
 
 const api: SonoraAPI = {
@@ -90,6 +94,31 @@ const api: SonoraAPI = {
 
   exportMusicList: (request: ExportRequest) =>
     ipcRenderer.invoke(IPC_CHANNELS.EXPORT_MUSIC_LIST, request),
+
+  onOpenFiles: (callback: (filePaths: string[]) => void) => {
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      filePaths: string[],
+    ) => {
+      callback(filePaths);
+    };
+    ipcRenderer.on(IPC_CHANNELS.FILES_OPEN, subscription);
+    return () => {
+      ipcRenderer.removeListener(IPC_CHANNELS.FILES_OPEN, subscription);
+    };
+  },
+
+  getPendingFiles: () => ipcRenderer.invoke(IPC_CHANNELS.FILES_GET_PENDING),
+
+  resolveTracks: (filePaths: string[]) =>
+    ipcRenderer.invoke(IPC_CHANNELS.TRACKS_RESOLVE_BY_PATHS, filePaths),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);
+
+contextBridge.exposeInMainWorld("sonora", {
+  files: {
+    onOpen: (callback: (filePaths: string[]) => void) => api.onOpenFiles(callback),
+  },
+});
+

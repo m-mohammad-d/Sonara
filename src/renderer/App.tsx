@@ -47,6 +47,33 @@ export const App: React.FC = () => {
     initPlayer();
     initLibrary();
     initPlaylists();
+
+    const handleExternalFiles = async (filePaths: string[]) => {
+      if (!filePaths || filePaths.length === 0) return;
+      try {
+        const tracks = await window.electronAPI.resolveTracks(filePaths);
+        if (tracks && tracks.length > 0) {
+          useLibraryStore.getState().addExternalTracks(tracks);
+          await usePlayerStore.getState().playTrack(tracks[0], tracks);
+        }
+      } catch (err) {
+        console.error('Failed to open external audio files:', err);
+      }
+    };
+
+    const unsubscribeFiles = window.electronAPI.onOpenFiles((filePaths) => {
+      handleExternalFiles(filePaths);
+    });
+
+    window.electronAPI.getPendingFiles().then((pending) => {
+      if (pending && pending.length > 0) {
+        handleExternalFiles(pending);
+      }
+    });
+
+    return () => {
+      unsubscribeFiles();
+    };
   }, [initSettings, initPlayer, initLibrary, initPlaylists]);
 
   const renderCurrentView = () => {

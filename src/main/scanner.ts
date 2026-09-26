@@ -5,17 +5,7 @@ import crypto from 'node:crypto';
 import * as musicMetadata from 'music-metadata';
 import type { Track, ScanProgress } from '../shared/types';
 import { IPC_CHANNELS } from '../shared/channels';
-
-const SUPPORTED_EXTENSIONS = new Set([
-  '.mp3',
-  '.flac',
-  '.wav',
-  '.ogg',
-  '.m4a',
-  '.aac',
-  '.opus',
-  '.wma',
-]);
+import { SUPPORTED_AUDIO_EXTENSIONS } from './fileArgs';
 
 export class LibraryScanner {
   private isCancelled = false;
@@ -59,7 +49,7 @@ export class LibraryScanner {
           }
         } else if (entry.isFile()) {
           const ext = path.extname(entry.name).toLowerCase();
-          if (SUPPORTED_EXTENSIONS.has(ext)) {
+          if (SUPPORTED_AUDIO_EXTENSIONS.has(ext)) {
             fileList.push(fullPath);
           }
         }
@@ -83,6 +73,82 @@ export class LibraryScanner {
       return filename;
     } catch {
       return undefined;
+    }
+  }
+
+  public async parseTrack(filePath: string, existingTrack?: Track): Promise<Track | null> {
+    const fileStat = await fs.promises.stat(filePath).catch(() => null);
+    if (!fileStat || !fileStat.isFile()) return null;
+
+    const trackId = crypto.createHash('sha1').update(filePath).digest('hex');
+
+    // Skip re-parsing if track already exists and hasn't changed
+    if (existingTrack && existingTrack.fileSize === fileStat.size) {
+      return existingTrack;
+    }
+
+    try {
+      const metadata = await musicMetadata.parseFile(filePath, {
+        skipCovers: false,
+        duration: true,
+      });
+
+      const { common, format } = metadata;
+      const fileNameNoExt = path.basename(filePath, path.extname(filePath));
+
+      let artworkId = existingTrack?.artworkId;
+      if (!artworkId && common.picture && common.picture.length > 0) {
+        artworkId = await this.saveArtwork(common.picture[0]);
+      }
+
+      const title = common.title?.trim() || fileNameNoExt;
+      const artist = common.artist?.trim() || common.albumartist?.trim() || 'Unknown Artist';
+      const album = common.album?.trim() || 'Unknown Album';
+      const genre = common.genre && common.genre.length > 0 ? common.genre[0] : undefined;
+      const year = common.year;
+      const duration = format.duration && !isNaN(format.duration) ? Math.round(format.duration) : 0;
+      const bitrate = format.bitrate ? Math.round(format.bitrate / 1000) : undefined;
+      const sampleRate = format.sampleRate;
+      const fileFormat = path.extname(filePath).replace('.', '').toUpperCase();
+
+      return {
+        id: trackId,
+        path: filePath,
+        title,
+        artist,
+        album,
+        albumArtist: common.albumartist?.trim(),
+        genre,
+        year,
+        trackNo: common.track?.no ?? undefined,
+        trackOf: common.track?.of ?? undefined,
+        discNo: common.disk?.no ?? undefined,
+        duration,
+        bitrate,
+        sampleRate,
+        format: fileFormat,
+        artworkId,
+        artworkUrl: artworkId ? `sonora-media://artwork/${artworkId}` : undefined,
+        dateAdded: existingTrack?.dateAdded || Date.now(),
+        fileSize: fileStat.size,
+        playCount: existingTrack?.playCount || 0,
+        lastPlayed: existingTrack?.lastPlayed,
+      };
+    } catch {
+      // Graceful fallback for unreadable metadata: still add track using filename
+      const fileNameNoExt = path.basename(filePath, path.extname(filePath));
+      return {
+        id: trackId,
+        path: filePath,
+        title: fileNameNoExt,
+        artist: 'Unknown Artist',
+        album: 'Unknown Album',
+        duration: 0,
+        format: path.extname(filePath).replace('.', '').toUpperCase(),
+        dateAdded: existingTrack?.dateAdded || Date.now(),
+        fileSize: fileStat.size,
+        playCount: existingTrack?.playCount || 0,
+      };
     }
   }
 
@@ -138,81 +204,11 @@ export class LibraryScanner {
         processed++;
 
         const trackId = crypto.createHash('sha1').update(filePath).digest('hex');
-        const fileStat = await fs.promises.stat(filePath).catch(() => null);
-
-        if (!fileStat) continue;
-
-        // Skip re-parsing if track already exists and hasn't changed
-        const existing = updatedTracks[trackId];
-        if (existing && existing.fileSize === fileStat.size) {
-          continue;
-        }
-
-        try {
-          const metadata = await musicMetadata.parseFile(filePath, {
-            skipCovers: false,
-            duration: true,
-          });
-
-          const { common, format } = metadata;
-          const fileNameNoExt = path.basename(filePath, path.extname(filePath));
-
-          let artworkId = existing?.artworkId;
-          if (!artworkId && common.picture && common.picture.length > 0) {
-            artworkId = await this.saveArtwork(common.picture[0]);
-          }
-
-          const title = common.title?.trim() || fileNameNoExt;
-          const artist = common.artist?.trim() || common.albumartist?.trim() || 'Unknown Artist';
-          const album = common.album?.trim() || 'Unknown Album';
-          const genre = common.genre && common.genre.length > 0 ? common.genre[0] : undefined;
-          const year = common.year;
-          const duration = format.duration && !isNaN(format.duration) ? Math.round(format.duration) : 0;
-          const bitrate = format.bitrate ? Math.round(format.bitrate / 1000) : undefined;
-          const sampleRate = format.sampleRate;
-          const fileFormat = path.extname(filePath).replace('.', '').toUpperCase();
-
-          albumsSet.add(album.toLowerCase());
-          artistsSet.add(artist.toLowerCase());
-
-          updatedTracks[trackId] = {
-            id: trackId,
-            path: filePath,
-            title,
-            artist,
-            album,
-            albumArtist: common.albumartist?.trim(),
-            genre,
-            year,
-            trackNo: common.track?.no ?? undefined,
-            trackOf: common.track?.of ?? undefined,
-            discNo: common.disk?.no ?? undefined,
-            duration,
-            bitrate,
-            sampleRate,
-            format: fileFormat,
-            artworkId,
-            artworkUrl: artworkId ? `sonora-media://artwork/${artworkId}` : undefined,
-            dateAdded: existing?.dateAdded || Date.now(),
-            fileSize: fileStat.size,
-            playCount: existing?.playCount || 0,
-            lastPlayed: existing?.lastPlayed,
-          };
-        } catch {
-          // Graceful fallback for unreadable metadata: still add track using filename
-          const fileNameNoExt = path.basename(filePath, path.extname(filePath));
-          updatedTracks[trackId] = {
-            id: trackId,
-            path: filePath,
-            title: fileNameNoExt,
-            artist: 'Unknown Artist',
-            album: 'Unknown Album',
-            duration: 0,
-            format: path.extname(filePath).replace('.', '').toUpperCase(),
-            dateAdded: existing?.dateAdded || Date.now(),
-            fileSize: fileStat.size,
-            playCount: existing?.playCount || 0,
-          };
+        const track = await this.parseTrack(filePath, updatedTracks[trackId]);
+        if (track) {
+          updatedTracks[trackId] = track;
+          if (track.album) albumsSet.add(track.album.toLowerCase());
+          if (track.artist) artistsSet.add(track.artist.toLowerCase());
         }
 
         const now = Date.now();

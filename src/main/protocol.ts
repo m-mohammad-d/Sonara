@@ -29,6 +29,7 @@ const MIME_TYPES: Record<string, string> = {
   '.m4a': 'audio/mp4',
   '.aac': 'audio/aac',
   '.opus': 'audio/opus',
+  '.wma': 'audio/x-ms-wma',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',

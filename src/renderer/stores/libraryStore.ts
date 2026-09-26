@@ -23,6 +23,7 @@ interface LibraryState {
   selectFoldersAndScan: () => Promise<void>;
   cancelScan: () => Promise<void>;
   removeFolder: (folder: string) => Promise<void>;
+  addExternalTracks: (tracks: Track[]) => void;
   setSearchQuery: (query: string) => void;
   setSort: (field: SortField, order?: SortOrder) => void;
   getFilteredTracks: () => Track[];
@@ -207,6 +208,27 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
       });
     } catch (err) {
       console.error('Failed to remove folder:', err);
+    }
+  },
+
+  addExternalTracks: (newTracks: Track[]) => {
+    if (!newTracks || newTracks.length === 0) return;
+    const currentTracks = { ...get().tracks };
+    let changed = false;
+    for (const track of newTracks) {
+      if (!currentTracks[track.id]) {
+        currentTracks[track.id] = track;
+        changed = true;
+      }
+    }
+    if (changed) {
+      const derived = deriveCollections(currentTracks);
+      set({
+        tracks: currentTracks,
+        albums: derived.albums,
+        artists: derived.artists,
+        genres: derived.genres,
+      });
     }
   },
 

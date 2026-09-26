@@ -1,8 +1,9 @@
 import { ipcMain, dialog, shell, BrowserWindow, Notification, globalShortcut } from "electron";
+import crypto from "node:crypto";
 import { IPC_CHANNELS } from "../shared/channels";
 import type { AppStore } from "./store";
 import type { LibraryScanner } from "./scanner";
-import type { Playlist, UserSettings, MediaCommand } from "../shared/types";
+import type { Track, Playlist, UserSettings, MediaCommand } from "../shared/types";
 import type { ExportRequest } from "../shared/export/types";
 import { handleExportMusicList } from "./export/exportManager";
 
@@ -10,6 +11,7 @@ export function registerIpcHandlers(
   store: AppStore,
   scanner: LibraryScanner,
   getMainWindow: () => BrowserWindow | null,
+  getPendingFiles?: () => string[],
 ): void {
   // Select folder dialog
   ipcMain.handle(IPC_CHANNELS.DIALOG_SELECT_FOLDERS, async () => {
@@ -215,6 +217,50 @@ export function registerIpcHandlers(
     const win = getMainWindow();
     return win?.isMaximized() ?? false;
   });
+
+  // Get pending files arriving before renderer is ready
+  ipcMain.handle(IPC_CHANNELS.FILES_GET_PENDING, () => {
+    return getPendingFiles ? getPendingFiles() : [];
+  });
+
+  // Resolve external file paths into Track objects
+  ipcMain.handle(
+    IPC_CHANNELS.TRACKS_RESOLVE_BY_PATHS,
+    async (_event, filePaths: string[]) => {
+      if (!Array.isArray(filePaths) || filePaths.length === 0) return [];
+      const currentLib = store.getLibrary();
+      const resolvedTracks: Track[] = [];
+      const newTracksMap: Record<string, Track> = {};
+
+      for (const filePath of filePaths) {
+        if (!filePath || typeof filePath !== 'string') continue;
+        try {
+          const trackId = crypto.createHash('sha1').update(filePath).digest('hex');
+          const existing = currentLib.tracks[trackId];
+          const track = await scanner.parseTrack(filePath, existing);
+          if (track) {
+            resolvedTracks.push(track);
+            if (!existing) {
+              newTracksMap[trackId] = track;
+            }
+          }
+        } catch (err) {
+          console.error(`Failed to resolve track for ${filePath}:`, err);
+        }
+      }
+
+      if (Object.keys(newTracksMap).length > 0) {
+        await store.setLibrary({
+          tracks: {
+            ...currentLib.tracks,
+            ...newTracksMap,
+          },
+        });
+      }
+
+      return resolvedTracks;
+    },
+  );
 }
 
 const MEDIA_SHORTCUTS: ReadonlyArray<{ accelerator: string; command: MediaCommand }> = [

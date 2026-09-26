@@ -19,4 +19,7 @@ export const IPC_CHANNELS = {
   WINDOW_IS_MAXIMIZED: "window:is-maximized",
   MEDIA_COMMAND: "media:command",
   EXPORT_MUSIC_LIST: "export:music-list",
+  FILES_OPEN: "files:open",
+  FILES_GET_PENDING: "files:get-pending",
+  TRACKS_RESOLVE_BY_PATHS: "tracks:resolve-by-paths",
 } as const;
